@@ -1,4 +1,5 @@
 import { NexusSDK } from '@avail-project/nexus-core';
+import type { TransferParams, TransferResult, SimulationResult } from '@avail-project/nexus-core';
 
 // Initialize Nexus SDK with testnet configuration
 // This SDK connects to Avail's Nexus Network for unified balance queries
@@ -77,5 +78,49 @@ export async function getUnifiedBalances(): Promise<any> {
   } catch (error: any) {
     console.error('Failed to fetch unified balances:', error);
     throw new Error(`Failed to fetch balances: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Transfer tokens using the Nexus SDK
+ * @param params - Transfer parameters including token, amount, chainId, recipient, and optional sourceChains
+ * @returns Promise with transfer result
+ * @throws Error if SDK is not initialized or transfer fails
+ */
+export async function transfer(params: TransferParams): Promise<TransferResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Initiating transfer with params:', params);
+    const result = await sdk.transfer(params);
+    console.log('Transfer result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Transfer failed:', error);
+    throw new Error(`Transfer failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Simulate a transfer to preview costs and optimization path
+ * @param params - Transfer parameters for simulation
+ * @returns Promise with simulation result
+ * @throws Error if SDK is not initialized or simulation fails
+ */
+export async function simulateTransfer(params: TransferParams): Promise<SimulationResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Simulating transfer with params:', params);
+    const result = await sdk.simulateTransfer(params);
+    console.log('Simulation result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Transfer simulation failed:', error);
+    throw new Error(`Transfer simulation failed: ${error?.message || 'Unknown error'}`);
   }
 }
