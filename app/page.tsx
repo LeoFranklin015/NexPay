@@ -6,6 +6,7 @@ import { CustomConnectButton } from '@/components/ConnectButton';
 import InitButton from '@/components/init-button';
 import FetchUnifiedBalanceButton from '@/components/fetch-unified';
 import TransferComponent from '@/components/Transfer';
+import BridgeComponent from '@/components/Bridge';
 import { isInitialized } from '@/lib/nexus';
  
 export default function Page() {
@@ -22,8 +23,8 @@ export default function Page() {
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">NexPay - Cross-Chain Token Transfer</h1>
-          <p className="text-lg text-gray-300">Transfer tokens across multiple chains using the Nexus SDK</p>
+          <h1 className="text-4xl font-bold text-white mb-4">NexPay - Cross-Chain Token Operations</h1>
+          <p className="text-lg text-gray-300">Transfer and bridge tokens across multiple chains using the Nexus SDK</p>
         </div>
 
         {/* Setup Section */}
@@ -55,6 +56,9 @@ export default function Page() {
 
         {/* Transfer Component */}
         <TransferComponent balances={balances} />
+
+        {/* Bridge Component */}
+        <BridgeComponent balances={balances} />
 
         {/* Balances Display */}
         {balances && (

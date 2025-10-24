@@ -1,5 +1,5 @@
 import { NexusSDK } from '@avail-project/nexus-core';
-import type { TransferParams, TransferResult, SimulationResult } from '@avail-project/nexus-core';
+import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult } from '@avail-project/nexus-core';
 
 // Initialize Nexus SDK with testnet configuration
 // This SDK connects to Avail's Nexus Network for unified balance queries
@@ -122,5 +122,49 @@ export async function simulateTransfer(params: TransferParams): Promise<Simulati
   } catch (error: any) {
     console.error('Transfer simulation failed:', error);
     throw new Error(`Transfer simulation failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Bridge tokens using the Nexus SDK
+ * @param params - Bridge parameters including token, amount, chainId, optional gas, and optional sourceChains
+ * @returns Promise with bridge result
+ * @throws Error if SDK is not initialized or bridge fails
+ */
+export async function bridge(params: BridgeParams): Promise<BridgeResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Initiating bridge with params:', params);
+    const result = await sdk.bridge(params);
+    console.log('Bridge result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Bridge failed:', error);
+    throw new Error(`Bridge failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Simulate a bridge to preview costs and optimization path
+ * @param params - Bridge parameters for simulation
+ * @returns Promise with simulation result
+ * @throws Error if SDK is not initialized or simulation fails
+ */
+export async function simulateBridge(params: BridgeParams): Promise<SimulationResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Simulating bridge with params:', params);
+    const result = await sdk.simulateBridge(params);
+    console.log('Bridge simulation result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Bridge simulation failed:', error);
+    throw new Error(`Bridge simulation failed: ${error?.message || 'Unknown error'}`);
   }
 }
