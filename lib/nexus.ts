@@ -1,5 +1,5 @@
 import { NexusSDK } from '@avail-project/nexus-core';
-import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult } from '@avail-project/nexus-core';
+import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult, BridgeAndExecuteParams, BridgeAndExecuteResult, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
 
 // Initialize Nexus SDK with testnet configuration
 // This SDK connects to Avail's Nexus Network for unified balance queries
@@ -166,5 +166,49 @@ export async function simulateBridge(params: BridgeParams): Promise<SimulationRe
   } catch (error: any) {
     console.error('Bridge simulation failed:', error);
     throw new Error(`Bridge simulation failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Bridge tokens and execute a contract function using the Nexus SDK
+ * @param params - Bridge and execute parameters including token, amount, chainId, and execute configuration
+ * @returns Promise with bridge and execute result
+ * @throws Error if SDK is not initialized or bridge and execute fails
+ */
+export async function bridgeAndExecute(params: BridgeAndExecuteParams): Promise<BridgeAndExecuteResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Initiating bridge and execute with params:', params);
+    const result = await sdk.bridgeAndExecute(params);
+    console.log('Bridge and execute result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Bridge and execute failed:', error);
+    throw new Error(`Bridge and execute failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Simulate bridge and execute to preview costs and optimization path
+ * @param params - Bridge and execute parameters for simulation
+ * @returns Promise with bridge and execute simulation result
+ * @throws Error if SDK is not initialized or simulation fails
+ */
+export async function simulateBridgeAndExecute(params: BridgeAndExecuteParams): Promise<BridgeAndExecuteSimulationResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Simulating bridge and execute with params:', params);
+    const result = await sdk.simulateBridgeAndExecute(params);
+    console.log('Bridge and execute simulation result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Bridge and execute simulation failed:', error);
+    throw new Error(`Bridge and execute simulation failed: ${error?.message || 'Unknown error'}`);
   }
 }
