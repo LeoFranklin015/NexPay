@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 
-// Supported chains for merchant setup
-const MERCHANT_CHAINS = [
+// Main 11 supported chains
+const MAIN_CHAINS = [
   { value: 1, label: 'Ethereum', nativeCurrency: 'ETH' },
   { value: 10, label: 'Optimism', nativeCurrency: 'ETH' },
   { value: 137, label: 'Polygon', nativeCurrency: 'MATIC' },
@@ -18,9 +18,35 @@ const MERCHANT_CHAINS = [
   { value: 9000000, label: 'HyperEVM', nativeCurrency: 'HYPE' },
 ];
 
+// Additional chains via Across
+const ACROSS_CHAINS = [
+  { value: 59144, label: 'Linea (Across)', nativeCurrency: 'USDC' },
+  { value: 534352, label: 'Scroll (Across)', nativeCurrency: 'USDC' },
+  { value: 480, label: 'World (Across)', nativeCurrency: 'USDC' },
+  { value: 130, label: 'Horizen EON (Across)', nativeCurrency: 'USDC' },
+  { value: 232, label: 'Espresso (Across)', nativeCurrency: 'USDC' },
+  { value: 999, label: 'HyperEVM (Across)', nativeCurrency: 'USDC' },
+];
+
+// Combined chains list
+const MERCHANT_CHAINS = [...MAIN_CHAINS, ...ACROSS_CHAINS];
+
+// Check if a chain is an Across chain
+const isAcrossChain = (chainId: number) => {
+  return ACROSS_CHAINS.some(chain => chain.value === chainId);
+};
+
 // Get available tokens for a specific chain
 const getTokensForChain = (chainId: number) => {
-  const chain = MERCHANT_CHAINS.find(c => c.value === chainId);
+  if (isAcrossChain(chainId)) {
+    // For Across chains, only USDC
+    return [
+      { value: 'USDC', label: 'USDC', decimals: 6 },
+    ];
+  }
+
+  // For main chains, native + USDC + USDT
+  const chain = MAIN_CHAINS.find(c => c.value === chainId);
   if (!chain) return [];
 
   const baseTokens = [
@@ -267,7 +293,10 @@ export default function MerchantSetupPage() {
                 <select
                   value={config.token}
                   onChange={(e) => setConfig(prev => ({ ...prev, token: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  disabled={isAcrossChain(config.chainId)}
+                  className={`w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+                    isAcrossChain(config.chainId) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   {getTokensForChain(config.chainId).map(token => (
                     <option key={token.value} value={token.value} className="bg-gray-800">
@@ -275,6 +304,9 @@ export default function MerchantSetupPage() {
                     </option>
                   ))}
                 </select>
+                {isAcrossChain(config.chainId) && (
+                  <p className="text-xs text-gray-400 mt-1">Only USDC supported for Across chains</p>
+                )}
               </div>
 
               {/* Receiving Address */}

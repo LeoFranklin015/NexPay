@@ -5,7 +5,7 @@ import { useAccount, useWriteContract } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { parseUnits, Address, decodeFunctionData } from 'viem';
 import axios from 'axios';
-import { transfer, getUnifiedBalances, isInitialized, bridgeAndExecute, simulateBridgeAndExecute } from '@/lib/nexus';
+import { transfer, getUnifiedBalances, isInitialized, bridgeAndExecute, simulateBridgeAndExecute ,simulateTransfer} from '@/lib/nexus';
 import type { TransferParams, BridgeAndExecuteParams, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
 import { getTokenAddress } from '@/lib/AcrossMainnet';
 import { CustomConnectButton } from '@/components/ConnectButton';
@@ -217,6 +217,72 @@ export default function PaymentPage() {
     }
   };
 
+  const handleSimulateTransfer = async () => {
+    if (!address || !isConnected) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!initialized) {
+      setError('Please initialize the SDK first');
+      return;
+    }
+
+    if (!merchantConfig) {
+      setError('Merchant configuration not found');
+      return;
+    }
+
+    if (!amount) {
+      setError('Please enter an amount');
+      return;
+    }
+
+    setIsSimulating(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const params: TransferParams = {
+        token: merchantConfig.token as any,
+        amount: amount,
+        chainId: merchantConfig.chainId as any,
+        recipient: merchantConfig.address as `0x${string}`,
+        ...(address && { sourceChains: [] as any }),
+      };
+
+      console.log('Simulate Transfer params:', params);
+      
+      // Use the actual simulateTransfer function from the SDK
+      const simResult = await simulateTransfer(params);
+      
+      setResult({
+        success: true,
+        message: 'Transfer simulation completed successfully!',
+        data: {
+          type: 'simulation',
+          method: 'transfer',
+          params: params,
+          simulationResult: simResult,
+          estimatedGas: '~50,000',
+          estimatedTime: '~30 seconds',
+          note: 'This is a simulation. No actual transaction will be executed.'
+        },
+      });
+      setShowModal(true);
+    } catch (err: any) {
+      console.error('Simulate Transfer error:', err);
+      setError(err.message || 'Simulation failed');
+      setResult({
+        success: false,
+        message: err.message || 'Simulation failed',
+      });
+      setShowModal(true);
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
   const handleBridgeAndExecute = async () => {
     if (!address || !isConnected) {
       setError('Please connect your wallet first');
@@ -336,6 +402,136 @@ export default function PaymentPage() {
       setShowModal(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSimulateBridgeAndExecute = async () => {
+    if (!address || !isConnected) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!initialized) {
+      setError('Please initialize the SDK first');
+      return;
+    }
+
+    if (!merchantConfig) {
+      setError('Merchant configuration not found');
+      return;
+    }
+
+    if (!amount) {
+      setError('Please enter an amount');
+      return;
+    }
+
+    setIsSimulating(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const amountWei = parseUnits(amount, TOKEN_DECIMALS['USDC'] || 18).toString();
+      
+      const inputTokenAddress = getTokenAddress(8453, 'USDC', true);
+      const outputTokenAddress = getTokenAddress(merchantConfig.chainId, merchantConfig.token, false);
+
+      if (!inputTokenAddress || !outputTokenAddress) {
+        throw new Error('Token addresses not found for the selected route');
+      }
+
+      const { data: swapData } = await axios.get('https://across.to/api/swap/approval', {
+        params: {
+          tradeType: 'minOutput',
+          amount: amountWei,
+          inputToken: inputTokenAddress,
+          originChainId: 8453,
+          outputToken: outputTokenAddress,
+          destinationChainId: merchantConfig.chainId,
+          depositor: address,
+          recipient: merchantConfig.address,
+        }
+      });
+
+      console.log('Simulate Bridge and Execute - Swap Data from Across:', swapData);
+      setSwapData(swapData);
+
+      const abi = [
+        {
+          inputs: [
+            { name: 'depositor', type: 'bytes32' },
+            { name: 'recipient', type: 'bytes32' },
+            { name: 'inputToken', type: 'bytes32' },
+            { name: 'outputToken', type: 'bytes32' },
+            { name: 'inputAmount', type: 'uint256' },
+            { name: 'outputAmount', type: 'uint256' },
+            { name: 'destinationChainId', type: 'uint256' },
+            { name: 'exclusiveRelayer', type: 'bytes32' },
+            { name: 'quoteTimestamp', type: 'uint32' },
+            { name: 'fillDeadline', type: 'uint32' },
+            { name: 'exclusivityParameter', type: 'uint32' },
+            { name: 'message', type: 'bytes' }
+          ],
+          name: 'deposit',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function'
+        }
+      ] as const;
+
+      const decoded = decodeFunctionData({
+        abi: abi as any,
+        data: swapData.swapTx.data as `0x${string}`,
+      });
+      
+      const params: BridgeAndExecuteParams = {
+        token: "USDC" as any,
+        amount: amountWei,
+        toChainId: 8453 as any,
+        sourceChains: [] as any,
+        execute: {
+          contractAddress: swapData.swapTx.to as Address,
+          contractAbi: abi,
+          functionName: 'deposit' as const,
+          buildFunctionParams: () => ({
+            functionParams: decoded.args as any,
+          }),
+          tokenApproval: {
+            token: "USDC" as any,
+            amount: amountWei,
+          },
+        },
+        waitForReceipt: false,
+      };
+
+      console.log('Simulate Bridge and Execute params:', params);
+      
+      const simResult = await simulateBridgeAndExecute(params);
+      setSimulationResult(simResult);
+      
+      setResult({
+        success: true,
+        message: 'Bridge and execute simulation completed successfully!',
+        data: {
+          type: 'simulation',
+          method: 'bridgeAndExecute',
+          simulationResult: simResult,
+          estimatedGas: '~150,000',
+          estimatedTime: '~2-5 minutes',
+          note: 'This is a simulation. No actual transaction will be executed.'
+        },
+      });
+      setShowModal(true);
+    } catch (err: any) {
+      console.error('Simulate Bridge and Execute error:', err);
+      setError(err.message || 'Simulation failed');
+      setResult({
+        success: false,
+        message: err.message || 'Simulation failed',
+      });
+      setShowModal(true);
+    } finally {
+      setIsSimulating(false);
     }
   };
 
@@ -534,24 +730,56 @@ export default function PaymentPage() {
               )}
             </div>
 
-            {/* Payment Button */}
-            <button
-              onClick={isDestinationAcross ? handleBridgeAndExecute : handleTransfer}
-              disabled={isLoading || !isConnected || !initialized || !amount}
-              className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing Payment...
-                </div>
-              ) : (
-                `Pay ${amount || '0'} ${merchantConfig.token}`
-              )}
-            </button>
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Simulate Button */}
+              <button
+                onClick={isDestinationAcross ? handleSimulateBridgeAndExecute : handleSimulateTransfer}
+                disabled={isSimulating || !isConnected || !initialized || !amount}
+                className="w-full px-6 py-3 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600/30 transition-all flex items-center justify-center"
+              >
+                {isSimulating ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Simulating...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Simulate Payment
+                  </div>
+                )}
+              </button>
+
+              {/* Payment Button */}
+              <button
+                onClick={isDestinationAcross ? handleBridgeAndExecute : handleTransfer}
+                disabled={isLoading || isSimulating || !isConnected || !initialized || !amount}
+                className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing Payment...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Pay {amount || '0'} {merchantConfig.token}
+                  </div>
+                )}
+              </button>
+            </div>
 
             {/* Approval button if needed for Across chains */}
             {isDestinationAcross && swapData && needsApproval() && (
