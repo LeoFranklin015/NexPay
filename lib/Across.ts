@@ -2214,3 +2214,54 @@ export const AcrossTokens = [
       "isNative": false
     }
   ]
+
+// Helper function to get available Across swap routes excluding TATARA-USDC
+export function getAcrossSwapRoutes() {
+  return AcrossTokens.filter(
+    (route) => 
+      route.originTokenSymbol !== 'TATARA-USDC' && 
+      route.destinationTokenSymbol !== 'TATARA-USDC'
+  );
+}
+
+// Helper function to get available tokens for a specific chain
+export function getTokensForChain(chainId: number) {
+  const routes = getAcrossSwapRoutes();
+  const tokens = new Set<string>();
+  
+  routes.forEach((route) => {
+    if (route.originChainId === chainId) {
+      tokens.add(route.originTokenSymbol);
+    }
+    if (route.destinationChainId === chainId) {
+      tokens.add(route.destinationTokenSymbol);
+    }
+  });
+  
+  return Array.from(tokens);
+}
+
+// Helper function to get available destination chains for a source chain and token
+export function getDestinationChains(sourceChainId: number, tokenSymbol: string) {
+  const routes = getAcrossSwapRoutes();
+  return routes
+    .filter((route) => 
+      route.originChainId === sourceChainId && 
+      route.originTokenSymbol === tokenSymbol
+    )
+    .map((route) => route.destinationChainId);
+}
+
+// Helper function to get token address for a specific chain and token symbol
+export function getTokenAddress(chainId: number, tokenSymbol: string, isOrigin: boolean) {
+  const routes = getAcrossSwapRoutes();
+  const route = routes.find((r) => {
+    if (isOrigin) {
+      return r.originChainId === chainId && r.originTokenSymbol === tokenSymbol;
+    } else {
+      return r.destinationChainId === chainId && r.destinationTokenSymbol === tokenSymbol;
+    }
+  });
+  
+  return route ? (isOrigin ? route.originToken : route.destinationToken) : null;
+}

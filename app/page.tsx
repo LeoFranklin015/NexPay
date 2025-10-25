@@ -12,6 +12,7 @@ import { isInitialized } from '@/lib/nexus';
 import ExecuteComponent from '@/components/Execute';
 import AcrossSwap from '@/components/AcrossSwap';
 import AcrossToUnichain from '@/components/AcrossToUnichain';
+import TestComponent from '@/components/test';
 
 export default function Page() {
   const { isConnected } = useAccount();
@@ -73,6 +74,9 @@ export default function Page() {
 
         {/* Across to Unichain Component */}
         <AcrossToUnichain />
+
+        {/* Case 1: Nexus-Only Transfer Component */}
+        <TestComponent />
 
         {/* Balances Display */}
         {balances && (
