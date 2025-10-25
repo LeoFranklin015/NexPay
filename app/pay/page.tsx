@@ -99,6 +99,7 @@ export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PaymentResult | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [balances, setBalances] = useState<any>(null);
   const [swapData, setSwapData] = useState<any>(null);
   const [approvalHash, setApprovalHash] = useState<string | null>(null);
@@ -588,7 +589,7 @@ export default function PaymentPage() {
 
   if (!merchantConfig) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 text-2xl mb-4">❌ Invalid Payment Link</div>
           <div className="text-gray-300">
@@ -604,239 +605,376 @@ export default function PaymentPage() {
   const isDestinationAcross = isAcrossChain(merchantConfig.chainId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12">
-      <div className="container mx-auto px-4 max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-6">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Payment to {merchantConfig.businessName}</h1>
-          {merchantConfig.description && (
-            <p className="text-gray-300">{merchantConfig.description}</p>
-          )}
+    <div className="min-h-screen bg-black">
+      {/* Status Bar */}
+      <div className="flex justify-between items-center px-4 py-2 text-white text-sm">
+        <span>3:19</span>
+        <div className="flex items-center space-x-1">
+          <div className="w-4 h-2 bg-white rounded-sm"></div>
+          <div className="w-4 h-2 bg-white rounded-sm"></div>
+          <div className="w-4 h-2 bg-white rounded-sm"></div>
+          <span className="ml-2">57%</span>
         </div>
+      </div>
 
-        {/* Status Messages */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 text-red-300 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              {error}
-            </div>
-          </div>
-        )}
-
-        {/* Setup Section */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">Setup</h2>
-          <div className="flex flex-col items-center gap-4">
-            <CustomConnectButton />
-            <InitButton 
-              className="px-6 py-3 bg-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition" 
-              onReady={() => setInitialized(true)} 
-            />
-          </div>
-          
-          <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-            <div className="text-center">
-              <span className="font-medium text-white">Wallet Status:</span>
-              <span className={`ml-2 ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-                {isConnected ? 'Connected' : 'Not connected'}
-              </span>
-            </div>
-            <div className="text-center">
-              <span className="font-medium text-white">SDK Status:</span>
-              <span className={`ml-2 ${initialized ? 'text-green-400' : 'text-red-400'}`}>
-                {initialized ? 'Initialized' : 'Not initialized'}
-              </span>
-            </div>
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-4">
+        <button className="text-white">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-xl font-semibold text-white">Payment</h1>
+        <div className="flex items-center bg-blue-600 px-3 py-1 rounded-full text-sm text-white">
+          <div className="w-2 h-2 bg-blue-300 rounded-full mr-2"></div>
+          {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
+          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
+      </div>
 
-        {/* Balance Display */}
-        {balances && (
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">Your Balances</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">${getUsdBalance().toFixed(2)}</div>
-                <div className="text-sm text-gray-300">USD Balance</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">${getEthBalance().toFixed(2)}</div>
-                <div className="text-sm text-gray-300">ETH Balance</div>
+      {/* Main Amount Display */}
+      <div className="px-4 py-8 text-center">
+        <div className="text-6xl font-bold text-blue-500 mb-2">
+          ${merchantConfig.amount || '0.00'}
+        </div>
+        <div className="text-white text-lg mb-1">
+          {merchantConfig.amount ? `${merchantConfig.amount} ${merchantConfig.token}` : `0.00 ${merchantConfig.token}`}
+        </div>
+        <div className="text-gray-400 text-sm">
+          {balances ? `$${getUsdBalance().toFixed(2)} available` : 'Loading balance...'}
+        </div>
+      </div>
+
+      {/* Wallet Balances Section */}
+      {balances && (
+        <div className="px-4 py-4">
+          <div className="bg-gray-900 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold text-lg">Your Portfolio</h3>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-white">${(getUsdBalance() + getEthBalance()).toFixed(2)}</div>
+                <div className="text-gray-400 text-sm">Total Balance</div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Payment Details */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">Payment Details</h2>
-          
-          <div className="space-y-4">
-            {/* Merchant Info */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Merchant:</span>
-                <div className="text-white font-medium">{merchantConfig.businessName}</div>
-              </div>
-              <div>
-                <span className="text-gray-400">Chain:</span>
-                <div className="text-white font-medium">
-                  {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
-                </div>
-              </div>
-              <div>
-                <span className="text-gray-400">Token:</span>
-                <div className="text-white font-medium">{merchantConfig.token}</div>
-              </div>
-              <div>
-                <span className="text-gray-400">Address:</span>
-                <div className="text-white font-mono text-xs">
-                  {merchantConfig.address.slice(0, 10)}...{merchantConfig.address.slice(-8)}
-                </div>
-              </div>
-            </div>
-
-            {/* Amount Input */}
-            <div>
-              <label className="block text-white font-medium mb-2">Amount to Pay</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setUsdAmount(e.target.value);
-                  }}
-                  placeholder="Enter amount"
-                  step="0.000001"
-                  className="w-full px-4 py-3 pr-16 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
-                  {merchantConfig.token}
-                </div>
-              </div>
-              {merchantConfig.amount && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Fixed amount: {merchantConfig.amount} {merchantConfig.token}
-                </p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
+            
             <div className="space-y-3">
-              {/* Simulate Button */}
-              <button
-                onClick={isDestinationAcross ? handleSimulateBridgeAndExecute : handleSimulateTransfer}
-                disabled={isSimulating || !isConnected || !initialized || !amount}
-                className="w-full px-6 py-3 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600/30 transition-all flex items-center justify-center"
-              >
-                {isSimulating ? (
+              {balances.slice(0, 5).map((balance: any, index: number) => (
+                <div key={balance.symbol} className="flex items-center justify-between py-2">
                   <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Simulating...
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+                      balance.symbol === 'ETH' ? 'bg-blue-600' :
+                      balance.symbol === 'USDC' ? 'bg-green-600' :
+                      balance.symbol === 'USDT' ? 'bg-blue-500' :
+                      balance.symbol === 'MATIC' ? 'bg-purple-600' :
+                      balance.symbol === 'AVAX' ? 'bg-red-600' :
+                      'bg-gray-600'
+                    }`}>
+                      <span className="text-white font-bold text-sm">
+                        {balance.symbol === 'ETH' ? 'Ξ' :
+                         balance.symbol === 'USDC' ? '$' :
+                         balance.symbol === 'USDT' ? '₮' :
+                         balance.symbol === 'MATIC' ? 'M' :
+                         balance.symbol === 'AVAX' ? 'A' :
+                         balance.symbol.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{balance.symbol}</div>
+                      <div className="text-gray-400 text-sm">
+                        {balance.symbol === 'ETH' ? 'Ethereum' :
+                         balance.symbol === 'USDC' ? 'USD Coin' :
+                         balance.symbol === 'USDT' ? 'Tether USD' :
+                         balance.symbol === 'MATIC' ? 'Polygon' :
+                         balance.symbol === 'AVAX' ? 'Avalanche' :
+                         balance.symbol}
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Simulate Payment
+                  <div className="text-right">
+                    <div className="text-white font-medium">
+                      ${balance.balanceInFiat ? parseFloat(balance.balanceInFiat).toFixed(2) : '0.00'}
+                    </div>
+                    <div className="text-gray-400 text-sm">
+                      {parseFloat(balance.balance).toFixed(4)} {balance.symbol}
+                    </div>
                   </div>
-                )}
-              </button>
-
-              {/* Payment Button */}
-              <button
-                onClick={isDestinationAcross ? handleBridgeAndExecute : handleTransfer}
-                disabled={isLoading || isSimulating || !isConnected || !initialized || !amount}
-                className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing Payment...
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                    Pay {amount || '0'} {merchantConfig.token}
-                  </div>
-                )}
-              </button>
-            </div>
-
-            {/* Approval button if needed for Across chains */}
-            {isDestinationAcross && swapData && needsApproval() && (
-              <button
-                onClick={handleApproval}
-                disabled={isLoading || !!approvalHash}
-                className="w-full px-6 py-3 bg-gray-700 text-white rounded-xl font-medium disabled:opacity-50"
-              >
-                {approvalHash ? `Approved: ${approvalHash}` : 'Approve Tokens First'}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Result Modal */}
-        {showModal && result && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-900 rounded-lg border border-gray-700 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-white">
-                    {result.success ? '✅ Payment Successful' : '❌ Payment Failed'}
-                  </h3>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="text-gray-400 hover:text-white text-2xl"
-                  >
-                    ×
+                </div>
+              ))}
+              
+              {balances.length > 5 && (
+                <div className="text-center pt-2">
+                  <button className="text-blue-400 text-sm hover:text-blue-300">
+                    View all {balances.length} assets
                   </button>
                 </div>
-                
-                <div className="mb-4">
-                  <p className={`text-lg ${result.success ? 'text-green-400' : 'text-red-400'}`}>
-                    {result.message}
-                  </p>
-                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-                {result.data && (
-                  <div className="mt-4">
-                    <h4 className="text-white font-medium mb-2">Transaction Details:</h4>
-                    <pre className="bg-black border border-gray-700 p-4 rounded-md overflow-auto text-xs text-gray-300">
-                      {JSON.stringify(result.data, null, 2)}
-                    </pre>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="w-full mt-6 px-6 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition"
-                >
-                  Close
-                </button>
+      {/* Merchant Info */}
+      <div className="px-4 py-4">
+        <div className="bg-gray-900 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-white font-medium">{merchantConfig.businessName}</div>
+                <div className="text-gray-400 text-sm">{merchantConfig.description || 'Payment Request'}</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-white text-sm">{merchantConfig.token}</div>
+              <div className="text-gray-400 text-xs">
+                {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Setup Section - Only show if not connected/initialized */}
+      {(!isConnected || !initialized) && (
+        <div className="px-4 py-4">
+          <div className="bg-gray-900 rounded-2xl p-4">
+            <h3 className="text-white font-medium mb-4">Setup Required</h3>
+            <div className="space-y-3">
+              <CustomConnectButton />
+              <InitButton 
+                className="w-full px-4 py-3 bg-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition" 
+                onReady={() => setInitialized(true)} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pay Button */}
+      <div className="px-4 py-6">
+        <button
+          onClick={() => setShowPaymentModal(true)}
+          disabled={!isConnected || !initialized}
+          className="w-full py-4 bg-blue-600 text-white rounded-2xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-all"
+        >
+          {!isConnected ? 'Connect Wallet to Pay' : 
+           !initialized ? 'Initialize SDK to Pay' : 
+           'Pay Merchant'}
+        </button>
+      </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
+          <div className="bg-gray-900 rounded-t-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Payment Details</h2>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Merchant Info */}
+              <div className="bg-gray-800 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{merchantConfig.businessName}</div>
+                      <div className="text-gray-400 text-sm">{merchantConfig.description || 'Payment Request'}</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-400">Chain:</span>
+                    <div className="text-white font-medium">
+                      {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Token:</span>
+                    <div className="text-white font-medium">{merchantConfig.token}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-400">Address:</span>
+                    <div className="text-white font-mono text-xs">
+                      {merchantConfig.address.slice(0, 10)}...{merchantConfig.address.slice(-8)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div className="mb-6">
+                <label className="block text-white font-medium mb-2">Amount to Pay</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      setUsdAmount(e.target.value);
+                    }}
+                    placeholder="Enter amount"
+                    step="0.000001"
+                    className="w-full px-4 py-3 pr-20 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        const tokenBalance = balances?.find((b: any) => b.symbol === merchantConfig.token);
+                        if (tokenBalance) {
+                          setAmount(parseFloat(tokenBalance.balance).toString());
+                          setUsdAmount(parseFloat(tokenBalance.balance).toString());
+                        }
+                      }}
+                      className="text-blue-400 text-xs font-medium hover:text-blue-300 transition-colors"
+                    >
+                      Max
+                    </button>
+                    <div className="text-gray-400 text-sm">
+                      {merchantConfig.token}
+                    </div>
+                  </div>
+                </div>
+                {merchantConfig.amount && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Fixed amount: {merchantConfig.amount} {merchantConfig.token}
+                  </p>
+                )}
+                {balances && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Available: {balances.find((b: any) => b.symbol === merchantConfig.token)?.balance || '0'} {merchantConfig.token}
+                  </p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {/* Simulate Button */}
+                <button
+                  onClick={isDestinationAcross ? handleSimulateBridgeAndExecute : handleSimulateTransfer}
+                  disabled={isSimulating || !isConnected || !initialized || !amount}
+                  className="w-full px-6 py-3 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600/30 transition-all flex items-center justify-center"
+                >
+                  {isSimulating ? (
+                    <div className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Simulating...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Simulate Payment
+                    </div>
+                  )}
+                </button>
+
+                {/* Payment Button */}
+                <button
+                  onClick={isDestinationAcross ? handleBridgeAndExecute : handleTransfer}
+                  disabled={isLoading || isSimulating || !isConnected || !initialized || !amount}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing Payment...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      Pay {amount || '0'} {merchantConfig.token}
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Approval button if needed for Across chains */}
+              {isDestinationAcross && swapData && needsApproval() && (
+                <button
+                  onClick={handleApproval}
+                  disabled={isLoading || !!approvalHash}
+                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-xl font-medium disabled:opacity-50 mt-3"
+                >
+                  {approvalHash ? `Approved: ${approvalHash}` : 'Approve Tokens First'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result Modal */}
+      {showModal && result && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg border border-gray-700 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-white">
+                  {result.success ? '✅ Payment Successful' : '❌ Payment Failed'}
+                </h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <p className={`text-lg ${result.success ? 'text-green-400' : 'text-red-400'}`}>
+                  {result.message}
+                </p>
+              </div>
+
+              {result.data && (
+                <div className="mt-4">
+                  <h4 className="text-white font-medium mb-2">Transaction Details:</h4>
+                  <pre className="bg-black border border-gray-700 p-4 rounded-md overflow-auto text-xs text-gray-300">
+                    {JSON.stringify(result.data, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-full mt-6 px-6 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
