@@ -1,5 +1,5 @@
 import { NexusSDK } from '@avail-project/nexus-core';
-import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult, BridgeAndExecuteParams, BridgeAndExecuteResult, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
+import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult, BridgeAndExecuteParams, BridgeAndExecuteResult, BridgeAndExecuteSimulationResult, ExecuteParams, ExecuteResult, ExecuteSimulation } from '@avail-project/nexus-core';
 
 // Initialize Nexus SDK with testnet configuration
 // This SDK connects to Avail's Nexus Network for unified balance queries
@@ -210,5 +210,49 @@ export async function simulateBridgeAndExecute(params: BridgeAndExecuteParams): 
   } catch (error: any) {
     console.error('Bridge and execute simulation failed:', error);
     throw new Error(`Bridge and execute simulation failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Execute a contract function on a specific chain using the Nexus SDK
+ * @param params - Execute parameters including contract address, ABI, function name, and parameters
+ * @returns Promise with execute result
+ * @throws Error if SDK is not initialized or execute fails
+ */
+export async function execute(params: ExecuteParams): Promise<ExecuteResult> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Initiating execute with params:', params);
+    const result = await sdk.execute(params);
+    console.log('Execute result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Execute failed:', error);
+    throw new Error(`Execute failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Simulate execute to preview costs and check for approval requirements
+ * @param params - Execute parameters for simulation
+ * @returns Promise with execute simulation result
+ * @throws Error if SDK is not initialized or simulation fails
+ */
+export async function simulateExecute(params: ExecuteParams): Promise<ExecuteSimulation> {
+  if (!sdk.isInitialized()) {
+    throw new Error('Nexus SDK not initialized. Please initialize first.');
+  }
+
+  try {
+    console.log('Simulating execute with params:', params);
+    const result = await sdk.simulateExecute(params);
+    console.log('Execute simulation result:', result);
+    return result;
+  } catch (error: any) {
+    console.error('Execute simulation failed:', error);
+    throw new Error(`Execute simulation failed: ${error?.message || 'Unknown error'}`);
   }
 }

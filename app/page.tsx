@@ -9,6 +9,8 @@ import TransferComponent from '@/components/Transfer';
 import BridgeComponent from '@/components/Bridge';
 import BridgeAndExecuteComponent from '@/components/BridgeAndExecute';
 import { isInitialized } from '@/lib/nexus';
+import ExecuteComponent from '@/components/Execute';
+import AcrossSwap from '@/components/AcrossSwap';
  
 export default function Page() {
   const { isConnected } = useAccount();
@@ -63,6 +65,10 @@ export default function Page() {
 
         {/* Bridge and Execute Component */}
         <BridgeAndExecuteComponent balances={balances} />
+
+
+        {/* Across Swap Component */}
+        <AcrossSwap />
 
         {/* Balances Display */}
         {balances && (
