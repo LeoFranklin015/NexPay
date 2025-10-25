@@ -1,26 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { parseUnits } from 'viem';
 import { transfer, getUnifiedBalances, isInitialized } from '@/lib/nexus';
 import type { TransferParams } from '@avail-project/nexus-core';
 
-// Supported chains for Case 1 (Nexus-supported chains only)
+// Supported chains
 const CHAINS = [
-  { value: 11155111, label: 'Ethereum Sepolia' },
-  { value: 84532, label: 'Base Sepolia' },
-  { value: 421614, label: 'Arbitrum Sepolia' },
-  { value: 80002, label: 'Polygon Amoy' },
+  { value: 1, label: 'Ethereum', nativeCurrency: 'ETH' },
+  { value: 10, label: 'Optimism', nativeCurrency: 'ETH' },
+  { value: 137, label: 'Polygon', nativeCurrency: 'MATIC' },
+  { value: 42161, label: 'Arbitrum', nativeCurrency: 'ETH' },
+  { value: 43114, label: 'Avalanche', nativeCurrency: 'AVAX' },
+  { value: 8453, label: 'Base', nativeCurrency: 'ETH' },
+  { value: 534351, label: 'Scroll', nativeCurrency: 'ETH' },
+  { value: 50104, label: 'Sophon', nativeCurrency: 'SOPH' },
+  { value: 8217, label: 'Kaia', nativeCurrency: 'KAIA' },
+  { value: 56, label: 'BNB Chain', nativeCurrency: 'BNB' },
+  { value: 9000000, label: 'HyperEVM', nativeCurrency: 'HYPE' },
 ];
 
-// Supported tokens
-const TOKENS = [
-  { value: 'USDC', label: 'USDC', decimals: 6 },
-  { value: 'USDT', label: 'USDT', decimals: 6 },
-  { value: 'ETH', label: 'ETH', decimals: 18 },
-  { value: 'MON', label: 'MON', decimals: 18 },
-];
+// Get available tokens for a specific chain
+const getTokensForChain = (chainId: number) => {
+  const chain = CHAINS.find(c => c.value === chainId);
+  if (!chain) return [];
+
+  const baseTokens = [
+    { value: 'USDC', label: 'USDC', decimals: 6 },
+    { value: 'USDT', label: 'USDT', decimals: 6 },
+  ];
+
+  const nativeToken = {
+    value: chain.nativeCurrency,
+    label: chain.nativeCurrency,
+    decimals: 18, // Most native tokens use 18 decimals
+  };
+
+  return [nativeToken, ...baseTokens];
+};
 
 interface PaymentResult {
   success: boolean;
@@ -32,8 +50,8 @@ export default function TestComponent() {
   const { address, isConnected } = useAccount();
   
   const [sourceChain, setSourceChain] = useState<number | null>(null); // Optional: let user choose or leave empty
-  const [destinationChain, setDestinationChain] = useState<number>(11155111); // Sepolia
-  const [token, setToken] = useState('USDC');
+  const [destinationChain, setDestinationChain] = useState<number>(1); // Ethereum
+  const [token, setToken] = useState('ETH');
   const [amount, setAmount] = useState('1');
   
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +59,15 @@ export default function TestComponent() {
   const [result, setResult] = useState<PaymentResult | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [balances, setBalances] = useState<any>(null);
+
+  // Reset token when destination chain changes
+  useEffect(() => {
+    const availableTokens = getTokensForChain(destinationChain);
+    if (availableTokens.length > 0) {
+      // Set to native token of the destination chain
+      setToken(availableTokens[0].value);
+    }
+  }, [destinationChain]);
 
   const handleTransfer = async () => {
     if (!address || !isConnected) {
@@ -92,9 +119,9 @@ export default function TestComponent() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-black border border-gray-800 rounded-lg">
-      <h2 className="text-2xl font-bold text-white mb-4">Case 1: Nexus-Supported Chains Transfer</h2>
+      <h2 className="text-2xl font-bold text-white mb-4">Multi-Chain Transfer</h2>
       <p className="text-gray-300 mb-6">
-        Transfer tokens between Nexus-supported chains (Sepolia, Base Sepolia, Arbitrum Sepolia, Amoy)
+        Transfer tokens between supported chains. Each chain supports its native token plus USDC and USDT.
       </p>
 
       {!isInitialized() && (
@@ -176,7 +203,7 @@ export default function TestComponent() {
             onChange={(e) => setToken(e.target.value)}
             className="w-full px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-700 focus:border-blue-500 focus:outline-none"
           >
-            {TOKENS.map(t => (
+            {getTokensForChain(destinationChain).map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>

@@ -15,12 +15,12 @@ const SUPPORTED_TOKENS = [
 ] as const;
 
 const SUPPORTED_CHAINS = [
-  { value: 11155111, label: 'Ethereum Sepolia', logo: 'https://assets.coingecko.com/asset_platforms/images/279/large/ethereum.png' },
-  { value: 84532, label: 'Base Sepolia', logo: 'https://assets.coingecko.com/asset_platforms/images/131/large/base-network.png' },
-  { value: 80002, label: 'Amoy', logo: 'https://assets.coingecko.com/asset_platforms/images/15/large/polygon_pos.png' },
-  { value: 421614, label: 'Arbitrum Sepolia', logo: 'https://assets.coingecko.com/coins/images/16547/large/arb.jpg' },
-  { value: 11155420, label: 'OP Sepolia', logo: 'https://assets.coingecko.com/coins/images/25244/large/Optimism.png' },
-  { value: 10143, label: 'Monad Testnet', logo: 'https://assets.coingecko.com/coins/images/38927/standard/monad.jpg' },
+  { value: 1, label: 'Ethereum', logo: 'https://assets.coingecko.com/asset_platforms/images/279/large/ethereum.png' },
+  { value: 8453, label: 'Base', logo: 'https://assets.coingecko.com/asset_platforms/images/131/large/base-network.png' },
+  { value: 137, label: 'Polygon', logo: 'https://assets.coingecko.com/asset_platforms/images/15/large/polygon_pos.png' },
+  { value: 42161, label: 'Arbitrum', logo: 'https://assets.coingecko.com/coins/images/16547/large/arb.jpg' },
+  { value: 10, label: 'Optimism', logo: 'https://assets.coingecko.com/coins/images/25244/large/Optimism.png' },
+  { value: 324, label: 'zkSync Era', logo: 'https://assets.coingecko.com/coins/images/22925/large/zksync.png' },
 ] as const;
 
 interface TransferComponentProps {
@@ -48,7 +48,7 @@ export default function TransferComponent({
   const [formData, setFormData] = useState<TransferParams>({
     token: 'USDC',
     amount: '',
-    chainId: 42161,
+    chainId: 8453, // Default to Base mainnet
     recipient: '' as `0x${string}`,
     sourceChains: [],
   });

@@ -12700,269 +12700,387 @@ export const AcrossMainnetRoutes = [
     }
   ]
 
-  export const BaseRoutes = [
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 1,
-      destinationToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 10,
-      destinationToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 10,
-      destinationToken: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 137,
-      destinationToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 137,
-      destinationToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 42161,
-      destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 42161,
-      destinationToken: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 324,
-      destinationToken: '0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 59144,
-      destinationToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 34443,
-      destinationToken: '0xd988097fb8612cc24eeC14542bC03424c656005f',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 1135,
-      destinationToken: '0xF242275d3a6527d877f2c927a82D9b057609cc71',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 534352,
-      destinationToken: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 7777777,
-      destinationToken: '0xCccCCccc7021b32EBb4e8C08314bD62F7c653EC4',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDzC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 480,
-      destinationToken: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 1868,
-      destinationToken: '0xbA9986D2381edf1DA03B0B9c1f8b00dc4AacC369',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC.e',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 130,
-      destinationToken: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 232,
-      destinationToken: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 56,
-      destinationToken: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC-BNB',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 34268394551451,
-      destinationToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 999,
-      destinationToken: '0xb88339CB7199b77E23DB6E890353E22632Ba630f',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    },
-    {
-      originChainId: 8453,
-      originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      destinationChainId: 42161,
-      destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      originTokenSymbol: 'USDC',
-      destinationTokenSymbol: 'USDC',
-      isNative: false
-    }
-  ]
 
-// Helper function to get available Across swap routes
-// For Base origin with USDC, use BaseRoutes; otherwise use AcrossMainnetRoutes
-export function getAcrossSwapRoutes() {
-  return AcrossMainnetRoutes;
-}
 
-// Helper function to get available tokens for a specific chain
-// For Base (8453), use BaseRoutes to get USDC destinations
-export function getTokensForChain(chainId: number) {
-  // For destination chain 8453 (Base) when source is Base, show USDC
-  if (chainId === 8453) {
-    return ['USDC', 'ETH', 'WETH', 'USDT', 'DAI', 'WBTC', 'ACX', 'BAL', 'POOL', 'UMA', 'WLD', 'VLR'];
-  }
-  
-  const routes = getAcrossSwapRoutes();
-  const tokens = new Set<string>();
-  
-  routes.forEach((route) => {
-    if (route.originChainId === chainId) {
-      tokens.add(route.originTokenSymbol);
-    }
-    if (route.destinationChainId === chainId) {
-      tokens.add(route.destinationTokenSymbol);
-    }
-  });
-  
-  return Array.from(tokens);
-}
+    const baseRoutes = AcrossMainnetRoutes.filter(route => route.originChainId === 8453 && route.destinationTokenSymbol === 'USDC' && route.originTokenSymbol==='USDC') 
 
-// Helper function to get available destination chains for a source chain and token
-// For Base origin with USDC, use BaseRoutes
-export function getDestinationChains(sourceChainId: number, tokenSymbol: string) {
-  // Special case: Base origin with USDC - use BaseRoutes
-  if (sourceChainId === 8453 && tokenSymbol === 'USDC') {
-    return BaseRoutes.map((route) => route.destinationChainId && route.originTokenSymbol === 'USDC');
-  }
-  
-  const routes = getAcrossSwapRoutes();
-  return routes
-    .filter((route) => 
-      route.originChainId === sourceChainId && 
-      route.originTokenSymbol === tokenSymbol
-    )
-    .map((route) => route.destinationChainId);
-}
+     const main = ()=>{
+      console.log(baseRoutes)
+    }
+    export const BaseRoutes = [
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 1,
+        destinationToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 10,
+        destinationToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 10,
+        destinationToken: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 137,
+        destinationToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 137,
+        destinationToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 42161,
+        destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 42161,
+        destinationToken: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 324,
+        destinationToken: '0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 59144,
+        destinationToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 34443,
+        destinationToken: '0xd988097fb8612cc24eeC14542bC03424c656005f',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 1135,
+        destinationToken: '0xF242275d3a6527d877f2c927a82D9b057609cc71',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 534352,
+        destinationToken: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 7777777,
+        destinationToken: '0xCccCCccc7021b32EBb4e8C08314bD62F7c653EC4',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDzC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 480,
+        destinationToken: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 1868,
+        destinationToken: '0xbA9986D2381edf1DA03B0B9c1f8b00dc4AacC369',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC.e',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 130,
+        destinationToken: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 232,
+        destinationToken: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 56,
+        destinationToken: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC-BNB',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 34268394551451,
+        destinationToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 999,
+        destinationToken: '0xb88339CB7199b77E23DB6E890353E22632Ba630f',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 42161,
+        destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      }
+    ]
 
-// Helper function to get token address for a specific chain and token symbol
-// For Base origin USDC or destination from BaseRoutes
-export function getTokenAddress(chainId: number, tokenSymbol: string, isOrigin: boolean) {
-  // If requesting Base USDC origin (from BaseRoutes)
-  if (chainId === 8453 && tokenSymbol === 'USDC' && isOrigin) {
-    return '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+
+    export const correctRoutes = [
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 1,
+        destinationToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 10,
+        destinationToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 137,
+        destinationToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 42161,
+        destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 59144,
+        destinationToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 534352,
+        destinationToken: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 480,
+        destinationToken: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 130,
+        destinationToken: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 232,
+        destinationToken: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 34268394551451,
+        destinationToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 999,
+        destinationToken: '0xb88339CB7199b77E23DB6E890353E22632Ba630f',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      },
+      {
+        originChainId: 8453,
+        originToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        destinationChainId: 42161,
+        destinationToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        originTokenSymbol: 'USDC',
+        destinationTokenSymbol: 'USDC',
+        isNative: false
+      }
+    ]
+  // Helper function to get available Across swap routes
+  // For Base origin with USDC, use BaseRoutes; otherwise use AcrossMainnetRoutes
+  export function getAcrossSwapRoutes() {
+    return AcrossMainnetRoutes;
   }
-  
-  // If looking for destination addresses when source is Base USDC, check BaseRoutes
-  if (!isOrigin && tokenSymbol === 'USDC') {
-    const baseRoute = BaseRoutes.find((route) => route.destinationChainId === chainId);
-    if (baseRoute) {
-      return baseRoute.destinationToken;
+
+  // Helper function to get available tokens for a specific chain
+  // For Base (8453), use BaseRoutes to get USDC destinations
+  export function getTokensForChain(chainId: number) {
+    // For destination chain 8453 (Base) when source is Base, show USDC
+    if (chainId === 8453) {
+      return ['USDC', 'ETH', 'WETH', 'USDT', 'DAI', 'WBTC', 'ACX', 'BAL', 'POOL', 'UMA', 'WLD', 'VLR'];
     }
+    
+    const routes = getAcrossSwapRoutes();
+    const tokens = new Set<string>();
+    
+    routes.forEach((route) => {
+      if (route.originChainId === chainId) {
+        tokens.add(route.originTokenSymbol);
+      }
+      if (route.destinationChainId === chainId) {
+        tokens.add(route.destinationTokenSymbol);
+      }
+    });
+    
+    return Array.from(tokens);
   }
-  
-  // Otherwise, search in main routes
-  const routes = getAcrossSwapRoutes();
-  const route = routes.find((r) => {
-    if (isOrigin) {
-      return r.originChainId === chainId && r.originTokenSymbol === tokenSymbol;
-    } else {
-      return r.destinationChainId === chainId && r.destinationTokenSymbol === tokenSymbol;
+
+  // Helper function to get available destination chains for a source chain and token
+  // For Base origin with USDC, use BaseRoutes
+  export function getDestinationChains(sourceChainId: number, tokenSymbol: string) {
+    // Special case: Base origin with USDC - use BaseRoutes
+    if (sourceChainId === 8453 && tokenSymbol === 'USDC') {
+      return BaseRoutes.map((route) => route.destinationChainId && route.originTokenSymbol === 'USDC');
     }
-  });
-  
-  return route ? (isOrigin ? route.originToken : route.destinationToken) : null;
-}
+    
+    const routes = getAcrossSwapRoutes();
+    return routes
+      .filter((route) => 
+        route.originChainId === sourceChainId && 
+        route.originTokenSymbol === tokenSymbol
+      )
+      .map((route) => route.destinationChainId);
+  }
+
+  // Helper function to get token address for a specific chain and token symbol
+  // For Base origin USDC or destination from BaseRoutes
+  export function getTokenAddress(chainId: number, tokenSymbol: string, isOrigin: boolean) {
+    // If requesting Base USDC origin (from BaseRoutes)
+    if (chainId === 8453 && tokenSymbol === 'USDC' && isOrigin) {
+      return '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+    }
+    
+    // If looking for destination addresses when source is Base USDC, check BaseRoutes
+    if (!isOrigin && tokenSymbol === 'USDC') {
+      const baseRoute = BaseRoutes.find((route) => route.destinationChainId === chainId);
+      if (baseRoute) {
+        return baseRoute.destinationToken;
+      }
+    }
+    
+    // Otherwise, search in main routes
+    const routes = getAcrossSwapRoutes();
+    const route = routes.find((r) => {
+      if (isOrigin) {
+        return r.originChainId === chainId && r.originTokenSymbol === tokenSymbol;
+      } else {
+        return r.destinationChainId === chainId && r.destinationTokenSymbol === tokenSymbol;
+      }
+    });
+    
+    return route ? (isOrigin ? route.originToken : route.destinationToken) : null;
+  }

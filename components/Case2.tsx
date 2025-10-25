@@ -1,36 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useBalance } from 'wagmi';
 import axios from 'axios';
 import { parseUnits, Address, decodeFunctionData } from 'viem';
-import { bridgeAndExecute, isInitialized } from '@/lib/nexus';
-import type { BridgeAndExecuteParams } from '@avail-project/nexus-core';
+import { bridgeAndExecute, simulateBridgeAndExecute, isInitialized } from '@/lib/nexus';
+import type { BridgeAndExecuteParams, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
 import { getTokensForChain, getDestinationChains, getTokenAddress } from '@/lib/AcrossMainnet';
 
-// Supported source chains (always start from these)
-const SOURCE_CHAINS = [
-  { value: 1, label: 'Ethereum' },
-  { value: 8453, label: 'Base' },
-  { value: 42161, label: 'Arbitrum' },
-  { value: 137, label: 'Polygon' },
-  { value: 10, label: 'Optimism' },
-];
+// Chains to exclude (already supported in main 11 chains)
+const EXCLUDED_CHAINS = [1, 10, 137, 42161, 43114, 8453, 534351, 50104, 8217, 56, 9000000];
 
-// All destination chains including non-Nexus-supported
+// Chain ID to name mapping for additional chains only
+const CHAIN_NAMES: Record<number, string> = {
+  59144: 'Linea',
+  534352: 'Scroll',
+  480: 'World',
+  130: 'Horizen EON',
+  232: 'Espresso',
+  999: 'HyperEVM',
+};
+
+// Supported destination chains from the actual data (excluding the 11 main chains)
 const DESTINATION_CHAINS = [
-  { value: 1, label: 'Ethereum' },
-  { value: 8453, label: 'Base' },
-  { value: 42161, label: 'Arbitrum' },
-  { value: 137, label: 'Polygon' },
-  { value: 10, label: 'Optimism' },
-  { value: 250, label: 'Fantom' },
-  { value: 43114, label: 'Avalanche' },
-  { value: 56, label: 'BNB Chain' },
-  { value: 100, label: 'Gnosis' },
-  { value: 324, label: 'zkSync Era' },
-  { value: 59144, label: 'Linea' },
-  { value: 534352, label: 'Scroll' },
+  { value: 59144, label: CHAIN_NAMES[59144] || 'Unidentified' },
+  { value: 534352, label: CHAIN_NAMES[534352] || 'Unidentified' },
+  { value: 480, label: CHAIN_NAMES[480] || 'Unidentified' },
+  { value: 130, label: CHAIN_NAMES[130] || 'Unidentified' },
+  { value: 232, label: CHAIN_NAMES[232] || 'Unidentified' },
+  { value: 999, label: CHAIN_NAMES[999] || 'Unidentified' },
 ];
 
 const MIDDLE_CHAIN = 8453; // Base
@@ -68,30 +66,28 @@ export default function Case2Component() {
   const { address, isConnected } = useAccount();
   const { writeContract } = useWriteContract();
   
-  const [sourceChain, setSourceChain] = useState<number>(1); // Ethereum Mainnet
-  const [destinationChain, setDestinationChain] = useState<number>(8453); // Base
+  const [destinationChain, setDestinationChain] = useState<number>(1); // Ethereum
   const [token, setToken] = useState('USDC');
   const [amount, setAmount] = useState('1');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PaymentResult | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [swapData, setSwapData] = useState<any>(null);
   const [approvalHash, setApprovalHash] = useState<string | null>(null);
-
-  // Get available tokens for destination chain
-  const destinationTokens = getTokensForChain(destinationChain);
+  const [simulationResult, setSimulationResult] = useState<BridgeAndExecuteSimulationResult | null>(null);
 
   const detectRoute = async () => {
-    if (destinationTokens.includes(token)) {
+    if (token === 'USDC') {
       setResult({
         success: true,
-        message: `Route available: ${SOURCE_CHAINS.find(c => c.value === sourceChain)?.label} → Base → ${DESTINATION_CHAINS.find(c => c.value === destinationChain)?.label}`,
+        message: `Route available: Base → ${DESTINATION_CHAINS.find(c => c.value === destinationChain)?.label}`,
       });
       setShowModal(true);
     } else {
-      setError(`Token ${token} not available for destination chain ${destinationChain}`);
+      setError(`Only USDC is supported for this route`);
     }
   };
 
@@ -139,6 +135,111 @@ export default function Case2Component() {
     }
   };
 
+  const handleSimulate = async () => {
+    if (!address || !isConnected) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!isInitialized()) {
+      setError('Nexus SDK not initialized');
+      return;
+    }
+
+    setIsSimulating(true);
+    setError(null);
+    setSimulationResult(null);
+
+    try {
+      // Step 1: Fetch swap details from Across API for Base -> Destination
+      const amountWei = parseUnits(amount, TOKEN_DECIMALS['USDC'] || 18).toString();
+      
+      // Input token is always USDC on Base, output token is the selected token from dropdown
+      const inputTokenAddress = getTokenAddress(MIDDLE_CHAIN, 'USDC', true);
+      const outputTokenAddress = getTokenAddress(destinationChain, token, false);
+
+      if (!inputTokenAddress || !outputTokenAddress) {
+        throw new Error('Token addresses not found for the selected route');
+      }
+
+      const { data: swapData } = await axios.get('https://across.to/api/swap/approval', {
+        params: {
+          tradeType: 'minOutput',
+          amount: amountWei,
+          inputToken: inputTokenAddress,
+          originChainId: MIDDLE_CHAIN,
+          outputToken: outputTokenAddress,
+          destinationChainId: destinationChain,
+          depositor: address,
+        }
+      });
+
+      // Step 2: Decode swap parameters
+      const abi = [
+        {
+          inputs: [
+            { name: 'depositor', type: 'bytes32' },
+            { name: 'recipient', type: 'bytes32' },
+            { name: 'inputToken', type: 'bytes32' },
+            { name: 'outputToken', type: 'bytes32' },
+            { name: 'inputAmount', type: 'uint256' },
+            { name: 'outputAmount', type: 'uint256' },
+            { name: 'destinationChainId', type: 'uint256' },
+            { name: 'exclusiveRelayer', type: 'bytes32' },
+            { name: 'quoteTimestamp', type: 'uint32' },
+            { name: 'fillDeadline', type: 'uint32' },
+            { name: 'exclusivityParameter', type: 'uint32' },
+            { name: 'message', type: 'bytes' }
+          ],
+          name: 'deposit',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function'
+        }
+      ] as const;
+
+      const decoded = decodeFunctionData({
+        abi: abi as any,
+        data: swapData.swapTx.data as `0x${string}`,
+      });
+
+      const params: BridgeAndExecuteParams = {
+        token: "USDC" as any,
+        amount: amountWei,
+        toChainId: MIDDLE_CHAIN as any, // Bridge to Base first
+        sourceChains: [] as any, // No source chains needed
+        execute: {
+          contractAddress: swapData.swapTx.to as Address,
+          contractAbi: abi,
+          functionName: 'deposit' as const,
+          buildFunctionParams: () => ({
+            functionParams: decoded.args as any,
+          }),
+          tokenApproval: {
+            token: "USDC" as any,
+            amount: amountWei,
+          },
+        },
+        waitForReceipt: false, // Don't wait during simulation
+      };
+
+      const simResult = await simulateBridgeAndExecute(params);
+      setSimulationResult(simResult);
+      
+      setResult({
+        success: true,
+        message: 'Simulation completed successfully!',
+        data: simResult,
+      });
+      setShowModal(true);
+    } catch (err: any) {
+      console.error('Simulation error:', err);
+      setError(err.message || 'Simulation failed');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
   const handleBridgeAndExecute = async () => {
     if (!address || !isConnected) {
       setError('Please connect your wallet first');
@@ -155,10 +256,15 @@ export default function Case2Component() {
     setResult(null);
 
     try {
+      // Note: Make sure you have enough USDC balance on both source and destination chains
+      // The SDK bridges USDC to Base first, then executes on Base, so you need:
+      // 1. Enough USDC on the source chain (for the bridge)
+      // 2. The bridged USDC will be available on Base for the execute step
       // Step 1: Fetch swap details from Across API for Base -> Destination
-      const amountWei = parseUnits(amount, TOKEN_DECIMALS[token] || 18).toString();
+      const amountWei = parseUnits(amount, TOKEN_DECIMALS['USDC'] || 18).toString();
       
-      const inputTokenAddress = getTokenAddress(MIDDLE_CHAIN, token, true);
+      // Input token is always USDC on Base, output token is the selected token from dropdown
+      const inputTokenAddress = getTokenAddress(MIDDLE_CHAIN, 'USDC', true);
       const outputTokenAddress = getTokenAddress(destinationChain, token, false);
 
       if (!inputTokenAddress || !outputTokenAddress) {
@@ -174,6 +280,8 @@ export default function Case2Component() {
           outputToken: outputTokenAddress,
           destinationChainId: destinationChain,
           depositor: address,
+          recipient: '0x601A3f4cEd83190957Dcd1D068Ba830b0d6277cD',
+
         }
       });
 
@@ -208,13 +316,12 @@ export default function Case2Component() {
         abi: abi as any,
         data: swapData.swapTx.data as `0x${string}`,
       });
-
-      // Step 3: Build bridge-and-execute params
+      
       const params: BridgeAndExecuteParams = {
-        token: token as any,
+        token: "USDC" as any,
         amount: amountWei,
         toChainId: MIDDLE_CHAIN as any, // Bridge to Base first
-        sourceChains: [sourceChain] as any, // From source chain
+        sourceChains: [] as any, // No source chains needed
         execute: {
           contractAddress: swapData.swapTx.to as Address,
           contractAbi: abi,
@@ -223,7 +330,7 @@ export default function Case2Component() {
             functionParams: decoded.args as any,
           }),
           tokenApproval: {
-            token: token as any,
+            token: "USDC" as any,
             amount: amountWei,
           },
         },
@@ -262,9 +369,9 @@ export default function Case2Component() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-black border border-gray-800 rounded-lg">
-      <h2 className="text-2xl font-bold text-white mb-4">Case 2: Non-Nexus Chains via Base (Across)</h2>
+      <h2 className="text-2xl font-bold text-white mb-4">Case 2: Bridge USDC from Base to Destination Chains</h2>
       <p className="text-gray-300 mb-6">
-        Bridge tokens from Nexus-supported chains to any destination via Base using Across
+        Bridge USDC from Base to supported destination chains using Across
       </p>
 
       {!isInitialized() && (
@@ -274,20 +381,6 @@ export default function Case2Component() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* Source Chain */}
-        <div>
-          <label className="text-white font-medium mb-2 block">From Chain</label>
-          <select
-            value={sourceChain}
-            onChange={(e) => setSourceChain(Number(e.target.value))}
-            className="w-full px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-700"
-          >
-            {SOURCE_CHAINS.map(chain => (
-              <option key={chain.value} value={chain.value}>{chain.label}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Destination Chain */}
         <div>
           <label className="text-white font-medium mb-2 block">To Chain</label>
@@ -302,21 +395,15 @@ export default function Case2Component() {
           </select>
         </div>
 
-        {/* Token */}
+        {/* Token - Fixed to USDC */}
         <div>
           <label className="text-white font-medium mb-2 block">Token</label>
           <select
             value={token}
-            onChange={(e) => setToken(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-700"
+            disabled
+            className="w-full px-4 py-2 bg-gray-700 text-gray-400 rounded-md border border-gray-600 cursor-not-allowed"
           >
-            {destinationTokens.length > 0 ? (
-              destinationTokens.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))
-            ) : (
-              <option>No tokens available</option>
-            )}
+            <option value="USDC">USDC</option>
           </select>
         </div>
 
@@ -336,7 +423,7 @@ export default function Case2Component() {
       {/* Route Info */}
       <div className="mb-4 p-4 bg-blue-900 bg-opacity-30 rounded-md">
         <p className="text-blue-300 text-sm">
-          Route: {SOURCE_CHAINS.find(c => c.value === sourceChain)?.label} → Base → {DESTINATION_CHAINS.find(c => c.value === destinationChain)?.label}
+          Route: Base → {DESTINATION_CHAINS.find(c => c.value === destinationChain)?.label}
         </p>
       </div>
 
@@ -344,14 +431,21 @@ export default function Case2Component() {
       <div className="flex gap-4 mb-4">
         <button
           onClick={detectRoute}
-          disabled={isLoading || !isConnected || !isInitialized()}
+          disabled={isLoading || isSimulating || !isConnected || !isInitialized()}
           className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-md font-medium disabled:opacity-50"
         >
           Detect Route
         </button>
         <button
+          onClick={handleSimulate}
+          disabled={isLoading || isSimulating || !isConnected || !isInitialized()}
+          className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-md font-medium disabled:opacity-50"
+        >
+          {isSimulating ? 'Simulating...' : 'Simulate'}
+        </button>
+        <button
           onClick={handleBridgeAndExecute}
-          disabled={isLoading || !isConnected || !isInitialized()}
+          disabled={isLoading || isSimulating || !isConnected || !isInitialized()}
           className="flex-1 px-6 py-3 bg-green-600 text-white rounded-md font-medium disabled:opacity-50"
         >
           {isLoading ? 'Processing...' : 'Bridge & Execute'}
