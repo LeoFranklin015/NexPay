@@ -14,6 +14,7 @@ import AcrossSwap from '@/components/AcrossSwap';
 import AcrossToUnichain from '@/components/AcrossToUnichain';
 import TestComponent from '@/components/test';
 import Case2Component from '@/components/Case2';
+import CombinedComponent from '@/components/Combined';
 
 export default function Page() {
   const { isConnected } = useAccount();
@@ -60,27 +61,26 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Transfer Component */}
+{/* 
         <TransferComponent balances={balances} />
 
-        {/* Bridge Component */}
+
         <BridgeComponent balances={balances} />
 
-        {/* Bridge and Execute Component */}
+
         <BridgeAndExecuteComponent balances={balances} />
 
 
-        {/* Across Swap Component */}
+
         <AcrossSwap />
 
-        {/* Across to Unichain Component */}
         <AcrossToUnichain />
 
-        {/* Case 1: Nexus-Only Transfer Component */}
         <TestComponent />
 
-        {/* Case 2: Non-Nexus Chains via Base (Across) */}
-        <Case2Component />
+        <Case2Component /> */}
+
+        <CombinedComponent />
 
         {/* Balances Display */}
         {balances && (
