@@ -13,6 +13,7 @@ import ExecuteComponent from '@/components/Execute';
 import AcrossSwap from '@/components/AcrossSwap';
 import AcrossToUnichain from '@/components/AcrossToUnichain';
 import TestComponent from '@/components/test';
+import Case2Component from '@/components/Case2';
 
 export default function Page() {
   const { isConnected } = useAccount();
@@ -77,6 +78,9 @@ export default function Page() {
 
         {/* Case 1: Nexus-Only Transfer Component */}
         <TestComponent />
+
+        {/* Case 2: Non-Nexus Chains via Base (Across) */}
+        <Case2Component />
 
         {/* Balances Display */}
         {balances && (

@@ -1,9 +1,9 @@
 import { NexusSDK } from '@avail-project/nexus-core';
 import type { TransferParams, TransferResult, SimulationResult, BridgeParams, BridgeResult, BridgeAndExecuteParams, BridgeAndExecuteResult, BridgeAndExecuteSimulationResult, ExecuteParams, ExecuteResult, ExecuteSimulation } from '@avail-project/nexus-core';
 
-// Initialize Nexus SDK with testnet configuration
+// Initialize Nexus SDK with mainnet configuration
 // This SDK connects to Avail's Nexus Network for unified balance queries
-export const sdk = new NexusSDK({ network: 'testnet' });
+export const sdk = new NexusSDK({ network: 'mainnet' });
 
 /**
  * Check if Nexus SDK is initialized
