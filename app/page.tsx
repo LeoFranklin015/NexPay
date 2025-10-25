@@ -11,7 +11,8 @@ import BridgeAndExecuteComponent from '@/components/BridgeAndExecute';
 import { isInitialized } from '@/lib/nexus';
 import ExecuteComponent from '@/components/Execute';
 import AcrossSwap from '@/components/AcrossSwap';
- 
+import AcrossToUnichain from '@/components/AcrossToUnichain';
+
 export default function Page() {
   const { isConnected } = useAccount();
   const [initialized, setInitialized] = useState(isInitialized());
@@ -69,6 +70,9 @@ export default function Page() {
 
         {/* Across Swap Component */}
         <AcrossSwap />
+
+        {/* Across to Unichain Component */}
+        <AcrossToUnichain />
 
         {/* Balances Display */}
         {balances && (
