@@ -105,9 +105,9 @@ export default function ENSResolutionPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4">ENS Resolver</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4">ENS Pay</h1>
             <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
-              Resolve ENS names and view their records
+              Enter an ENS name to pay. If configured, you'll be redirected to the payment gateway.
             </p>
           </div>
 
