@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { parseUnits, Address, decodeFunctionData } from 'viem';
 import axios from 'axios';
-import { transfer, getUnifiedBalances, isInitialized, bridgeAndExecute, simulateBridgeAndExecute ,simulateTransfer} from '@/lib/nexus';
+import { transfer, getUnifiedBalances, isInitialized, bridgeAndExecute, simulateBridgeAndExecute ,simulateTransfer, initializeWithProvider} from '@/lib/nexus';
 import type { TransferParams, BridgeAndExecuteParams, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
 import { getTokenAddress } from '@/lib/AcrossMainnet';
 import { CustomConnectButton } from '@/components/ConnectButton';
-import InitButton from '@/components/init-button';
 
 // Main 11 supported chains
 const MAIN_CHAINS = [
@@ -87,7 +86,7 @@ interface PaymentResult {
 }
 
 function PaymentPageContent() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { writeContract } = useWriteContract();
   const searchParams = useSearchParams();
   
@@ -105,6 +104,8 @@ function PaymentPageContent() {
   const [approvalHash, setApprovalHash] = useState<string | null>(null);
   const [simulationResult, setSimulationResult] = useState<BridgeAndExecuteSimulationResult | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const initializingRef = useRef(false);
 
   // Parse merchant configuration from URL
   useEffect(() => {
@@ -131,6 +132,36 @@ function PaymentPageContent() {
   useEffect(() => {
     setInitialized(isInitialized());
   }, []);
+
+  // Auto-initialize Nexus SDK when wallet is connected
+  useEffect(() => {
+    const autoInitialize = async () => {
+      // Only initialize if connected, not already initialized, not currently initializing (using ref), and have address and connector
+      if (isConnected && !initialized && !initializingRef.current && address && connector) {
+        initializingRef.current = true;
+        try {
+          console.log('Starting auto-initialization...');
+          setIsInitializing(true);
+          const provider = await connector.getProvider();
+          console.log('Got provider:', provider);
+          if (provider) {
+            await initializeWithProvider(provider);
+            console.log('Nexus SDK initialized successfully');
+            setInitialized(true);
+          } else {
+            console.error('No provider returned from connector');
+          }
+        } catch (err) {
+          console.error('Auto-initialization failed:', err);
+        } finally {
+          setIsInitializing(false);
+          initializingRef.current = false;
+        }
+      }
+    };
+    autoInitialize();
+    // Only re-run when isConnected or initialized changes
+  }, [isConnected, initialized, address, connector]);
 
   // Fetch balances when connected and initialized
   useEffect(() => {
@@ -625,9 +656,15 @@ function PaymentPageContent() {
           </div>
         )}
 
-        {/* If not connected - Show Splash Page */}
+        {/* If not connected or initializing - Show Splash Page */}
         {!isConnected || !initialized ? (
-          <div className="flex flex-col items-center justify-between min-h-[70vh] py-12">
+          <div className="flex flex-col items-center justify-between min-h-[70vh] py-12 relative">
+            {/* Show initialization status */}
+            {isConnected && isInitializing && (
+              <div className="absolute top-0 left-0 right-0 text-center text-orange-500 text-sm">
+                Initializing...
+              </div>
+            )}
             {/* Logo Circle with First Letter */}
             <div className="flex-1 flex items-center justify-center mb-12">
               <div className="relative">
@@ -666,12 +703,6 @@ function PaymentPageContent() {
             <div className="w-full mt-auto">
               {!isConnected && (
                 <CustomConnectButton />
-              )}
-              {!initialized && isConnected && (
-                <InitButton 
-                  className="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition shadow-lg" 
-                  onReady={() => setInitialized(true)} 
-                />
               )}
             </div>
           </div>
