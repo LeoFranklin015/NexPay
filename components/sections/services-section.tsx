@@ -17,10 +17,7 @@ export function ServicesSection() {
             isVisible ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
           }`}
         >
-          <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            How it works
-          </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Architecture overview</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Services</p>
         </div>
 
         {/* Architecture Diagram */}
