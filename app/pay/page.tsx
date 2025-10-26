@@ -9,6 +9,7 @@ import { transfer, getUnifiedBalances, isInitialized, bridgeAndExecute, simulate
 import type { TransferParams, BridgeAndExecuteParams, BridgeAndExecuteSimulationResult } from '@avail-project/nexus-core';
 import { getTokenAddress } from '@/lib/AcrossMainnet';
 import { CustomConnectButton } from '@/components/ConnectButton';
+import { CustomCursor } from '@/components/custom-cursor';
 
 // Main 11 supported chains
 const MAIN_CHAINS = [
@@ -106,26 +107,45 @@ function PaymentPageContent() {
   const [initialized, setInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const initializingRef = useRef(false);
+  const [selectedToken, setSelectedToken] = useState<any>(null);
+  const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [configError, setConfigError] = useState(false);
 
   // Parse merchant configuration from URL
   useEffect(() => {
     const configParam = searchParams.get('config');
-    if (configParam) {
-      try {
-        const decodedConfig = JSON.parse(atob(configParam));
-        setMerchantConfig(decodedConfig);
-        
-        // Set amount if provided by merchant
-        if (decodedConfig.amount) {
-          setAmount(decodedConfig.amount);
-          setUsdAmount(decodedConfig.amount);
+    setConfigLoading(true);
+    
+    // Add a small delay to show loading state
+    setTimeout(() => {
+      if (configParam) {
+        try {
+          const decodedConfig = JSON.parse(atob(configParam));
+          
+          // Validate required fields
+          if (!decodedConfig.chainId || !decodedConfig.token || !decodedConfig.address) {
+            setConfigError(true);
+            setError('Invalid payment configuration - missing required fields');
+          } else {
+            setMerchantConfig(decodedConfig);
+            
+            // Set amount if provided by merchant
+            if (decodedConfig.amount) {
+              setAmount(decodedConfig.amount);
+              setUsdAmount(decodedConfig.amount);
+            }
+          }
+        } catch (err) {
+          setConfigError(true);
+          setError('Invalid payment configuration - unable to parse config');
         }
-      } catch (err) {
-        setError('Invalid payment configuration');
+      } else {
+        setConfigError(true);
+        setError('No payment configuration found');
       }
-    } else {
-      setError('No payment configuration found');
-    }
+      setConfigLoading(false);
+    }, 500);
   }, [searchParams]);
 
   // Check if initialized
@@ -136,31 +156,54 @@ function PaymentPageContent() {
   // Auto-initialize Nexus SDK when wallet is connected
   useEffect(() => {
     const autoInitialize = async () => {
-      // Only initialize if connected, not already initialized, not currently initializing (using ref), and have address and connector
-      if (isConnected && !initialized && !initializingRef.current && address && connector) {
+      console.log('Auto-init check:', { isConnected, initialized, isInitializingRef: initializingRef.current, address });
+      
+      // Only initialize if connected, not already initialized, not currently initializing (using ref), and have address
+      if (isConnected && !initialized && !initializingRef.current && address) {
         initializingRef.current = true;
         try {
           console.log('Starting auto-initialization...');
           setIsInitializing(true);
-          const provider = await connector.getProvider();
+          
+          // Try multiple ways to get the provider
+          let provider: any = null;
+          
+          // Method 1: Try from connector
+          if (connector && typeof connector.getProvider === 'function') {
+            console.log('Trying to get provider from connector...');
+            provider = await connector.getProvider();
+          }
+          
+          // Method 2: Try from window.ethereum
+          if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
+            console.log('Trying to get provider from window.ethereum...');
+            provider = (window as any).ethereum;
+          }
+          
           console.log('Got provider:', provider);
           if (provider) {
             await initializeWithProvider(provider);
             console.log('Nexus SDK initialized successfully');
             setInitialized(true);
           } else {
-            console.error('No provider returned from connector');
+            console.error('No provider found');
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Auto-initialization failed:', err);
+          console.error('Error details:', err?.message, err?.stack);
         } finally {
           setIsInitializing(false);
           initializingRef.current = false;
         }
       }
     };
-    autoInitialize();
-    // Only re-run when isConnected or initialized changes
+    
+    // Small delay to ensure connector is ready
+    const timeoutId = setTimeout(() => {
+      autoInitialize();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [isConnected, initialized, address, connector]);
 
   // Fetch balances when connected and initialized
@@ -618,7 +661,21 @@ function PaymentPageContent() {
     return allowanceActual < allowanceExpected;
   };
 
-  if (!merchantConfig) {
+  // Show loading state while config is being parsed
+  if (configLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <div className="text-white text-xl font-semibold mb-2">Loading Payment</div>
+          <div className="text-gray-400">Preparing your payment interface</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if config is invalid
+  if (!merchantConfig || configError) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
@@ -628,9 +685,10 @@ function PaymentPageContent() {
             </svg>
           </div>
           <div className="text-red-400 text-2xl font-bold mb-2">Invalid Payment Link</div>
-          <div className="text-gray-400">
-            This payment link is invalid or corrupted.
-            <br />
+          <div className="text-gray-400 mb-4">
+            {error || 'This payment link is invalid or corrupted.'}
+          </div>
+          <div className="text-gray-500 text-sm">
             Please contact the merchant for a valid payment link.
           </div>
         </div>
@@ -647,14 +705,6 @@ function PaymentPageContent() {
     <div className="min-h-screen bg-black">
       {/* Main Content */}
       <div className="max-w-md mx-auto px-6 py-12">
-        {/* Payment Amount - Only show when connected */}
-        {isConnected && initialized && (
-          <div className="text-center mb-12">
-            <div className="text-5xl font-bold text-white mb-2">
-              ${merchantConfig.amount || '0.00'}
-            </div>
-          </div>
-        )}
 
         {/* If not connected or initializing - Show Splash Page */}
         {!isConnected || !initialized ? (
@@ -708,31 +758,92 @@ function PaymentPageContent() {
           </div>
         ) : (
           /* If connected - Show Balances and Pay Button */
-          <div className="space-y-8">
-            {/* Token List - Simple Checkbox Style */}
-            <div className="space-y-4">
-              {nonZeroBalances.map((balance: any) => (
-                <div key={balance.symbol} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 border-2 border-white rounded-full mr-4"></div>
-                    <div className="text-white text-lg">{balance.symbol}</div>
-                  </div>
-                  <div className="text-white text-lg">
-                    {parseFloat(balance.balance || '0').toFixed(2)}
-                  </div>
-                </div>
-              ))}
+          <div className="pb-32 space-y-6">
+            {/* Total Portfolio Balance Card */}
+            <div className="relative bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-2xl p-6 shadow-lg shadow-orange-500/20 overflow-hidden">
+              {/* Shader effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-400/30 to-transparent animate-shimmer"></div>
+              <div className="relative z-10 text-white text-5xl font-bold text-center">
+                ${nonZeroBalances.reduce((sum: number, b: any) => sum + parseFloat(b.balanceInFiat || '0'), 0).toFixed(2)}
+              </div>
             </div>
 
-            {/* Pay Button at Bottom */}
-            <div className="mt-12">
-              <button
-                onClick={() => setShowPaymentModal(true)}
-                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all shadow-lg"
-              >
-                Pay
-              </button>
+
+            {/* Token List with Icons and Balances */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="p-4 border-b border-white/10">
+                <h3 className="text-white font-semibold">Your Assets</h3>
+              </div>
+              <div className="divide-y divide-white/10">
+                {nonZeroBalances.map((balance: any) => (
+                  <div 
+                    key={balance.symbol} 
+                    onClick={() => {
+                      if (balance.breakdown && balance.breakdown.length > 0) {
+                        setSelectedToken(balance);
+                        setShowBreakdownModal(true);
+                      }
+                    }}
+                    className={`flex items-center justify-between p-4 transition-colors ${
+                      balance.breakdown && balance.breakdown.length > 0 
+                        ? 'hover:bg-white/5 cursor-pointer' 
+                        : 'hover:bg-white/2 cursor-default'
+                    }`}
+                  >
+                    <div className="flex items-center flex-1">
+                      {/* Token Icon */}
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-white/10 flex-shrink-0">
+                        {balance.icon ? (
+                          <img 
+                            src={balance.icon} 
+                            alt={balance.symbol}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        ) : (
+                          <span className="text-white font-bold text-sm">
+                            {balance.symbol.charAt(0)}
+                          </span>
+                        )}
+                      </div>
+                      {/* Token Name */}
+                      <div>
+                        <div className="text-white text-base font-medium">
+                          {balance.symbol}
+                        </div>
+                      </div>
+                      {/* Chevron icon if has breakdown */}
+                      {balance.breakdown && balance.breakdown.length > 0 && (
+                        <svg className="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
+                    </div>
+                    
+                    {/* Balances */}
+                    <div className="text-right ml-4">
+                      <div className="text-white text-lg font-semibold">
+                        ${parseFloat(balance.balanceInFiat || '0').toFixed(2)}
+                      </div>
+                      <div className="text-gray-400 text-sm">
+                        {parseFloat(balance.balance || '0').toFixed(4)} {balance.symbol}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+        )}
+        
+        {/* Sticky Pay Button at Bottom */}
+        {isConnected && initialized && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-white/10 z-40">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all shadow-lg"
+            >
+              Pay Merchant
+            </button>
           </div>
         )}
       </div>
@@ -943,6 +1054,87 @@ function PaymentPageContent() {
           </div>
         </div>
       )}
+
+      {/* Breakdown Modal */}
+      {showBreakdownModal && selectedToken && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-black border border-white/20 rounded-2xl max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto shadow-xl">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  {selectedToken.icon && (
+                    <img 
+                      src={selectedToken.icon} 
+                      alt={selectedToken.symbol}
+                      className="w-10 h-10 rounded-full mr-3"
+                    />
+                  )}
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{selectedToken.symbol}</h3>
+                    <p className="text-gray-400 text-sm">
+                      ${parseFloat(selectedToken.balanceInFiat || '0').toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowBreakdownModal(false)}
+                  className="text-white hover:text-gray-400"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Breakdown List */}
+              <div className="space-y-2">
+                <h4 className="text-white font-semibold mb-3">Balance Breakdown</h4>
+                {selectedToken.breakdown
+                  .filter((chain: any) => parseFloat(chain.balance || '0') > 0)
+                  .map((chain: any, index: number) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center flex-1">
+                      {chain.chain?.logo ? (
+                        <img 
+                          src={chain.chain.logo} 
+                          alt={chain.chain.name}
+                          className="w-8 h-8 rounded-full mr-3 object-contain"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3">
+                          <span className="text-white text-xs font-bold">
+                            {chain.chain?.name?.charAt(0) || '?'}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-white text-sm font-medium">
+                          {chain.chain?.name || 'Unknown Chain'}
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          {chain.contractAddress?.slice(0, 6)}...{chain.contractAddress?.slice(-4)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white text-sm font-semibold">
+                        {parseFloat(chain.balance || '0').toFixed(4)}
+                      </div>
+                      <div className="text-gray-400 text-xs">
+                        ${parseFloat(chain.balanceInFiat || '0').toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -958,6 +1150,7 @@ export default function PaymentPage() {
         </div>
       </div>
     }>
+      <CustomCursor />
       <PaymentPageContent />
     </Suspense>
   );
