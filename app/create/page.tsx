@@ -184,7 +184,7 @@ export default function MerchantSetupPage() {
       // Create the payment URL
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://your-domain.com' 
-        : 'http://localhost:3000';
+        : 'https://nexxpay.vercel.app';
       
       const paymentUrl = `${baseUrl}/pay?config=${encodedConfig}`;
       
