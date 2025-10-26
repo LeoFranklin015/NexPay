@@ -565,7 +565,7 @@ export default function MerchantSetupPage() {
                   </button>
                   
                   {/* Testing Mode Skip Button */}
-                  <button
+                  {/* <button
                     onClick={() => {
                       setIsTestingMode(true);
                       setIsSubnameRegistered(true);
@@ -584,7 +584,7 @@ export default function MerchantSetupPage() {
                     className="w-full px-6 py-3 bg-yellow-600/20 border-2 border-yellow-500/50 text-yellow-400 rounded-xl font-medium hover:bg-yellow-600/30 transition-all"
                   >
                     🧪 Skip Registration (Testing Mode)
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
