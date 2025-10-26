@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { parseUnits, Address, decodeFunctionData } from 'viem';
@@ -86,7 +86,7 @@ interface PaymentResult {
   data?: any;
 }
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const { address, isConnected } = useAccount();
   const { writeContract } = useWriteContract();
   const searchParams = useSearchParams();
@@ -976,5 +976,20 @@ export default function PaymentPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-white text-2xl mb-4">Loading...</div>
+          <div className="text-gray-300">Preparing payment interface</div>
+        </div>
+      </div>
+    }>
+      <PaymentPageContent />
+    </Suspense>
   );
 }

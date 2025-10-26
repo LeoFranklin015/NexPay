@@ -16,7 +16,7 @@ export default function Home() {
   const touchStartY = useRef(0)
   const touchStartX = useRef(0)
   const shaderContainerRef = useRef<HTMLDivElement>(null)
-  const scrollThrottleRef = useRef<number>()
+  const scrollThrottleRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     const checkShaderReady = () => {
