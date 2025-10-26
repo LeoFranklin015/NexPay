@@ -8,16 +8,30 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { JustaNameProvider } from '@justaname.id/react';
 import { ChainId } from '@justaname.id/sdk';
 
+const getOrigin = () => {
+  if (process.env.NEXT_ENV === 'dev') {
+    return "http://localhost:3000/";
+  }
+  return process.env.NEXT_PUBLIC_URL || "http://localhost:3000/";
+};
+
+const getDomain = () => {
+  if (process.env.NEXT_ENV === 'dev') {
+    return "localhost";
+  }
+  return process.env.NEXT_PUBLIC_URL?.replace('https://', '').replace('http://', '') || "localhost";
+};
+
 const justnameConfig = {
   config: {
-    origin: "http://localhost:3000/",
-    domain: "localhost",
+    origin: getOrigin(),
+    domain: getDomain(),
     signInTtl: 86400000,
   },
   ensDomains: [
     {
       ensDomain: "resolverlens.eth",
-      apiKey: process.env.NEXT_PUBLIC_JUSTNAME_API_KEY || "I8FIJ0ub5Iz2hCzDgpklKj0N1rENpIZR",
+      apiKey: process.env.NEXT_PUBLIC_JUSTNAME_API_KEY ||"",
       chainId: 1 as ChainId,
     },
   ],
