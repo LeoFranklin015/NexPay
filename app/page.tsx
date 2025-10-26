@@ -6,7 +6,6 @@ import { GrainOverlay } from "@/components/grain-overlay"
 import { WorkSection } from "@/components/sections/work-section"
 import { ServicesSection } from "@/components/sections/services-section"
 import { AboutSection } from "@/components/sections/about-section"
-import { ContactSection } from "@/components/sections/contact-section"
 import { MagneticButton } from "@/components/magnetic-button"
 import { useRef, useEffect, useState } from "react"
 
@@ -228,7 +227,7 @@ export default function Home() {
         </button>
 
         <div className="hidden items-center gap-8 md:flex">
-          {["Home", "Work", "Services", "About", "Contact"].map((item, index) => (
+          {["Home", "Services", "How it works", "About" ].map((item, index) => (
             <button
               key={item}
               onClick={() => scrollToSection(index)}
@@ -304,7 +303,6 @@ export default function Home() {
         <WorkSection />
         <ServicesSection />
         <AboutSection scrollToSection={scrollToSection} />
-        <ContactSection />
       </div>
 
       <style jsx global>{`

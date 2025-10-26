@@ -17,32 +17,29 @@ export function WorkSection() {
           }`}
         >
           <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Featured
+            Pay easily by
           </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Recent explorations</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Choose your preferred payment method</p>
         </div>
 
         <div className="space-y-6 md:space-y-8">
           {[
             {
               number: "01",
-              title: "Kinetic Typography",
-              category: "Interactive Experience",
-              year: "2024",
+              title: "Scanning a QR",
+              category: "Quick & Secure",
               direction: "left",
             },
             {
               number: "02",
-              title: "Generative Patterns",
-              category: "Visual System",
-              year: "2024",
+              title: "Tap and Pay",
+              category: "NFC Technology",
               direction: "right",
             },
             {
               number: "03",
-              title: "Spatial Interface",
-              category: "3D Navigation",
-              year: "2023",
+              title: "Pay by Link",
+              category: "Share & Pay",
               direction: "left",
             },
           ].map((project, i) => (
@@ -59,7 +56,7 @@ function ProjectCard({
   index,
   isVisible,
 }: {
-  project: { number: string; title: string; category: string; year: string; direction: string }
+  project: { number: string; title: string; category: string;  direction: string }
   index: number
   isVisible: boolean
 }) {
@@ -90,7 +87,6 @@ function ProjectCard({
           <p className="font-mono text-xs text-foreground/50 md:text-sm">{project.category}</p>
         </div>
       </div>
-      <span className="font-mono text-xs text-foreground/30 md:text-sm">{project.year}</span>
     </div>
   )
 }

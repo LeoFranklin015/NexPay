@@ -17,82 +17,13 @@ export function ServicesSection() {
           }`}
         >
           <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Capabilities
+            How it works
           </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ What we bring to the table</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Architecture overview</p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 md:gap-x-16 md:gap-y-12 lg:gap-x-24">
-          {[
-            {
-              title: "Creative Development",
-              description: "Pushing the boundaries of what's possible on the web",
-              direction: "top",
-            },
-            {
-              title: "Visual Design",
-              description: "Crafting memorable experiences through thoughtful aesthetics",
-              direction: "right",
-            },
-            {
-              title: "Motion & Animation",
-              description: "Bringing interfaces to life with purposeful movement",
-              direction: "left",
-            },
-            {
-              title: "Technical Strategy",
-              description: "Building scalable solutions that perform beautifully",
-              direction: "bottom",
-            },
-          ].map((service, i) => (
-            <ServiceCard key={i} service={service} index={i} isVisible={isVisible} />
-          ))}
-        </div>
+        {/* Architecture diagram will be added here */}
       </div>
     </section>
-  )
-}
-
-function ServiceCard({
-  service,
-  index,
-  isVisible,
-}: {
-  service: { title: string; description: string; direction: string }
-  index: number
-  isVisible: boolean
-}) {
-  const getRevealClass = () => {
-    if (!isVisible) {
-      switch (service.direction) {
-        case "left":
-          return "-translate-x-16 opacity-0"
-        case "right":
-          return "translate-x-16 opacity-0"
-        case "top":
-          return "-translate-y-16 opacity-0"
-        case "bottom":
-          return "translate-y-16 opacity-0"
-        default:
-          return "translate-y-12 opacity-0"
-      }
-    }
-    return "translate-x-0 translate-y-0 opacity-100"
-  }
-
-  return (
-    <div
-      className={`group transition-all duration-700 ${getRevealClass()}`}
-      style={{
-        transitionDelay: `${index * 150}ms`,
-      }}
-    >
-      <div className="mb-3 flex items-center gap-3">
-        <div className="h-px w-8 bg-foreground/30 transition-all duration-300 group-hover:w-12 group-hover:bg-foreground/50" />
-        <span className="font-mono text-xs text-foreground/60">0{index + 1}</span>
-      </div>
-      <h3 className="mb-2 font-sans text-2xl font-light text-foreground md:text-3xl">{service.title}</h3>
-      <p className="max-w-sm text-sm leading-relaxed text-foreground/80 md:text-base">{service.description}</p>
-    </div>
   )
 }
