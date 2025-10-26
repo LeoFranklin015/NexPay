@@ -590,9 +590,14 @@ function PaymentPageContent() {
   if (!merchantConfig) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-400 text-2xl mb-4">❌ Invalid Payment Link</div>
-          <div className="text-gray-300">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <div className="text-red-400 text-2xl font-bold mb-2">Invalid Payment Link</div>
+          <div className="text-gray-400">
             This payment link is invalid or corrupted.
             <br />
             Please contact the merchant for a valid payment link.
@@ -604,182 +609,114 @@ function PaymentPageContent() {
 
   const isDestinationAcross = isAcrossChain(merchantConfig.chainId);
 
+  // Filter non-zero balances
+  const nonZeroBalances = balances ? balances.filter((b: any) => parseFloat(b.balance || '0') > 0) : [];
+
   return (
     <div className="min-h-screen bg-black">
-      {/* Status Bar */}
-      <div className="flex justify-between items-center px-4 py-2 text-white text-sm">
-        <span>3:19</span>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-2 bg-white rounded-sm"></div>
-          <div className="w-4 h-2 bg-white rounded-sm"></div>
-          <div className="w-4 h-2 bg-white rounded-sm"></div>
-          <span className="ml-2">57%</span>
-        </div>
-      </div>
+      {/* Main Content */}
+      <div className="max-w-md mx-auto px-6 py-12">
+        {/* Payment Amount - Only show when connected */}
+        {isConnected && initialized && (
+          <div className="text-center mb-12">
+            <div className="text-5xl font-bold text-white mb-2">
+              ${merchantConfig.amount || '0.00'}
+            </div>
+          </div>
+        )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4">
-        <button className="text-white">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-xl font-semibold text-white">Payment</h1>
-        <div className="flex items-center bg-blue-600 px-3 py-1 rounded-full text-sm text-white">
-          <div className="w-2 h-2 bg-blue-300 rounded-full mr-2"></div>
-          {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
-          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Main Amount Display */}
-      <div className="px-4 py-8 text-center">
-        <div className="text-6xl font-bold text-blue-500 mb-2">
-          ${merchantConfig.amount || '0.00'}
-        </div>
-        <div className="text-white text-lg mb-1">
-          {merchantConfig.amount ? `${merchantConfig.amount} ${merchantConfig.token}` : `0.00 ${merchantConfig.token}`}
-        </div>
-        <div className="text-gray-400 text-sm">
-          {balances ? `$${getUsdBalance().toFixed(2)} available` : 'Loading balance...'}
-        </div>
-      </div>
-
-      {/* Wallet Balances Section */}
-      {balances && (
-        <div className="px-4 py-4">
-          <div className="bg-gray-900 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold text-lg">Your Portfolio</h3>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-white">${(getUsdBalance() + getEthBalance()).toFixed(2)}</div>
-                <div className="text-gray-400 text-sm">Total Balance</div>
+        {/* If not connected - Show Splash Page */}
+        {!isConnected || !initialized ? (
+          <div className="flex flex-col items-center justify-between min-h-[70vh] py-12">
+            {/* Logo Circle with First Letter */}
+            <div className="flex-1 flex items-center justify-center mb-12">
+              <div className="relative">
+                {/* Shader background circle */}
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 flex items-center justify-center shadow-2xl shadow-orange-500/50">
+                  <span className="text-white text-5xl font-bold">
+                    {merchantConfig.businessName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
               </div>
             </div>
             
-            <div className="space-y-3">
-              {balances.slice(0, 5).map((balance: any, index: number) => (
-                <div key={balance.symbol} className="flex items-center justify-between py-2">
-                  <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-                      balance.symbol === 'ETH' ? 'bg-blue-600' :
-                      balance.symbol === 'USDC' ? 'bg-green-600' :
-                      balance.symbol === 'USDT' ? 'bg-blue-500' :
-                      balance.symbol === 'MATIC' ? 'bg-purple-600' :
-                      balance.symbol === 'AVAX' ? 'bg-red-600' :
-                      'bg-gray-600'
-                    }`}>
-                      <span className="text-white font-bold text-sm">
-                        {balance.symbol === 'ETH' ? 'Ξ' :
-                         balance.symbol === 'USDC' ? '$' :
-                         balance.symbol === 'USDT' ? '₮' :
-                         balance.symbol === 'MATIC' ? 'M' :
-                         balance.symbol === 'AVAX' ? 'A' :
-                         balance.symbol.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">{balance.symbol}</div>
-                      <div className="text-gray-400 text-sm">
-                        {balance.symbol === 'ETH' ? 'Ethereum' :
-                         balance.symbol === 'USDC' ? 'USD Coin' :
-                         balance.symbol === 'USDT' ? 'Tether USD' :
-                         balance.symbol === 'MATIC' ? 'Polygon' :
-                         balance.symbol === 'AVAX' ? 'Avalanche' :
-                         balance.symbol}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">
-                      ${balance.balanceInFiat ? parseFloat(balance.balanceInFiat).toFixed(2) : '0.00'}
-                    </div>
-                    <div className="text-gray-400 text-sm">
-                      {parseFloat(balance.balance).toFixed(4)} {balance.symbol}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {balances.length > 5 && (
-                <div className="text-center pt-2">
-                  <button className="text-blue-400 text-sm hover:text-blue-300">
-                    View all {balances.length} assets
-                  </button>
-                </div>
+            {/* Merchant Info Below Circle */}
+            <div className="mb-8 space-y-3">
+              <div className="text-white text-2xl text-center font-medium">
+                {merchantConfig.businessName}
+              </div>
+              <div className="text-gray-400 text-sm text-center">
+                {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
+              </div>
+              <div className="text-gray-400 text-sm text-center">
+                {merchantConfig.token}
+              </div>
+            </div>
+
+            {/* Coin GIF */}
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/coin.gif" 
+                alt="Payment" 
+                className="w-32 h-32 object-contain"
+              />
+            </div>
+            
+            {/* Connect Button */}
+            <div className="w-full mt-auto">
+              {!isConnected && (
+                <CustomConnectButton />
+              )}
+              {!initialized && isConnected && (
+                <InitButton 
+                  className="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition shadow-lg" 
+                  onReady={() => setInitialized(true)} 
+                />
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Merchant Info */}
-      <div className="px-4 py-4">
-        <div className="bg-gray-900 rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div>
-                <div className="text-white font-medium">{merchantConfig.businessName}</div>
-                <div className="text-gray-400 text-sm">{merchantConfig.description || 'Payment Request'}</div>
-              </div>
+        ) : (
+          /* If connected - Show Balances and Pay Button */
+          <div className="space-y-8">
+            {/* Token List - Simple Checkbox Style */}
+            <div className="space-y-4">
+              {nonZeroBalances.map((balance: any) => (
+                <div key={balance.symbol} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 border-2 border-white rounded-full mr-4"></div>
+                    <div className="text-white text-lg">{balance.symbol}</div>
+                  </div>
+                  <div className="text-white text-lg">
+                    {parseFloat(balance.balance || '0').toFixed(2)}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="text-right">
-              <div className="text-white text-sm">{merchantConfig.token}</div>
-              <div className="text-gray-400 text-xs">
-                {ALL_CHAINS.find(c => c.value === merchantConfig.chainId)?.label}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Setup Section - Only show if not connected/initialized */}
-      {(!isConnected || !initialized) && (
-        <div className="px-4 py-4">
-          <div className="bg-gray-900 rounded-2xl p-4">
-            <h3 className="text-white font-medium mb-4">Setup Required</h3>
-            <div className="space-y-3">
-              <CustomConnectButton />
-              <InitButton 
-                className="w-full px-4 py-3 bg-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition" 
-                onReady={() => setInitialized(true)} 
-              />
+            {/* Pay Button at Bottom */}
+            <div className="mt-12">
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-all shadow-lg"
+              >
+                Pay
+              </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Pay Button */}
-      <div className="px-4 py-6">
-        <button
-          onClick={() => setShowPaymentModal(true)}
-          disabled={!isConnected || !initialized}
-          className="w-full py-4 bg-blue-600 text-white rounded-2xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-all"
-        >
-          {!isConnected ? 'Connect Wallet to Pay' : 
-           !initialized ? 'Initialize SDK to Pay' : 
-           'Pay Merchant'}
-        </button>
+        )}
       </div>
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-          <div className="bg-gray-900 rounded-t-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-end z-50">
+          <div className="bg-black border-t border-white/10 w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Payment Details</h2>
+                <h2 className="text-2xl font-bold text-white">Complete Payment</h2>
                 <button
                   onClick={() => setShowPaymentModal(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-white hover:text-gray-400"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -788,10 +725,10 @@ function PaymentPageContent() {
               </div>
 
               {/* Merchant Info */}
-              <div className="bg-gray-800 rounded-xl p-4 mb-6">
+              <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/10">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mr-3">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
@@ -816,7 +753,7 @@ function PaymentPageContent() {
                   <div className="col-span-2">
                     <span className="text-gray-400">Address:</span>
                     <div className="text-white font-mono text-xs">
-                      {merchantConfig.address.slice(0, 10)}...{merchantConfig.address.slice(-8)}
+                      {merchantConfig.address.slice(0, 6)}...{merchantConfig.address.slice(-4)}
                     </div>
                   </div>
                 </div>
@@ -835,18 +772,18 @@ function PaymentPageContent() {
                     }}
                     placeholder="Enter amount"
                     step="0.000001"
-                    className="w-full px-4 py-3 pr-20 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 pr-20 bg-black border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
                     <button
                       onClick={() => {
-                        const tokenBalance = balances?.find((b: any) => b.symbol === merchantConfig.token);
+                        const tokenBalance = nonZeroBalances.find((b: any) => b.symbol === merchantConfig.token);
                         if (tokenBalance) {
                           setAmount(parseFloat(tokenBalance.balance).toString());
                           setUsdAmount(parseFloat(tokenBalance.balance).toString());
                         }
                       }}
-                      className="text-blue-400 text-xs font-medium hover:text-blue-300 transition-colors"
+                      className="text-orange-400 text-xs font-medium hover:text-orange-300 transition-colors"
                     >
                       Max
                     </button>
@@ -860,9 +797,9 @@ function PaymentPageContent() {
                     Fixed amount: {merchantConfig.amount} {merchantConfig.token}
                   </p>
                 )}
-                {balances && (
+                {balances && nonZeroBalances.find((b: any) => b.symbol === merchantConfig.token) && (
                   <p className="text-xs text-gray-400 mt-1">
-                    Available: {balances.find((b: any) => b.symbol === merchantConfig.token)?.balance || '0'} {merchantConfig.token}
+                    Available: {nonZeroBalances.find((b: any) => b.symbol === merchantConfig.token)?.balance || '0'} {merchantConfig.token}
                   </p>
                 )}
               </div>
@@ -873,11 +810,11 @@ function PaymentPageContent() {
                 <button
                   onClick={isDestinationAcross ? handleSimulateBridgeAndExecute : handleSimulateTransfer}
                   disabled={isSimulating || !isConnected || !initialized || !amount}
-                  className="w-full px-6 py-3 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600/30 transition-all flex items-center justify-center"
+                  className="w-full px-6 py-3 bg-white/5 border border-white/20 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition-all flex items-center justify-center"
                 >
                   {isSimulating ? (
                     <div className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -897,7 +834,7 @@ function PaymentPageContent() {
                 <button
                   onClick={isDestinationAcross ? handleBridgeAndExecute : handleTransfer}
                   disabled={isLoading || isSimulating || !isConnected || !initialized || !amount}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
+                  className="w-full px-6 py-4 bg-orange-500 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-all shadow-lg"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">
@@ -923,7 +860,7 @@ function PaymentPageContent() {
                 <button
                   onClick={handleApproval}
                   disabled={isLoading || !!approvalHash}
-                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-xl font-medium disabled:opacity-50 mt-3"
+                  className="w-full px-6 py-3 bg-white/10 text-white rounded-lg font-medium disabled:opacity-50 mt-3 hover:bg-white/20"
                 >
                   {approvalHash ? `Approved: ${approvalHash}` : 'Approve Tokens First'}
                 </button>
@@ -935,8 +872,8 @@ function PaymentPageContent() {
 
       {/* Result Modal */}
       {showModal && result && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg border border-gray-700 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-black border border-white/20 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-2xl font-bold text-white">
@@ -944,7 +881,7 @@ function PaymentPageContent() {
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-white text-2xl"
+                  className="text-white hover:text-gray-400 text-2xl"
                 >
                   ×
                 </button>
@@ -959,7 +896,7 @@ function PaymentPageContent() {
               {result.data && (
                 <div className="mt-4">
                   <h4 className="text-white font-medium mb-2">Transaction Details:</h4>
-                  <pre className="bg-black border border-gray-700 p-4 rounded-md overflow-auto text-xs text-gray-300">
+                  <pre className="bg-black border border-white/20 p-4 rounded-lg overflow-auto text-xs text-gray-300">
                     {JSON.stringify(result.data, null, 2)}
                   </pre>
                 </div>
@@ -967,7 +904,7 @@ function PaymentPageContent() {
 
               <button
                 onClick={() => setShowModal(false)}
-                className="w-full mt-6 px-6 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition"
+                className="w-full mt-6 px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition shadow-lg"
               >
                 Close
               </button>
@@ -984,8 +921,9 @@ export default function PaymentPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="text-white text-2xl mb-4">Loading...</div>
-          <div className="text-gray-300">Preparing payment interface</div>
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-white text-xl font-semibold mb-2">Loading...</div>
+          <div className="text-gray-400">Preparing payment interface</div>
         </div>
       </div>
     }>
