@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { CustomCursor } from '@/components/custom-cursor';
 import { GrainOverlay } from '@/components/grain-overlay';
 import { Shader, ChromaFlow, Swirl } from "shaders/react";
-import { useAddSubname, useIsSubnameAvailable } from '@justaname.id/react';
+import { useAddSubname, useIsSubnameAvailable, useUpdateSubname } from '@justaname.id/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import QRCode from 'qrcode';
 
 // Main 11 supported chains
 const MAIN_CHAINS = [
@@ -97,12 +98,16 @@ export default function MerchantSetupPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [isTestingMode, setIsTestingMode] = useState(false); // Testing mode to skip subname registration
 
   // Subname hooks
   const { isSubnameAvailable } = useIsSubnameAvailable({ 
     username: merchantSubname 
   });
   const { addSubname } = useAddSubname();
+  const { updateSubname, isUpdateSubnamePending } = useUpdateSubname();
+  const [isUpdatingSubname, setIsUpdatingSubname] = useState(false);
 
   // Shader loading effect
   useEffect(() => {
@@ -144,7 +149,7 @@ export default function MerchantSetupPage() {
     if (config.amount && isNaN(Number(config.amount))) {
       return 'Amount must be a valid number';
     }
-    if (!isSubnameRegistered) {
+    if (!isSubnameRegistered && !isTestingMode) {
       return 'Subname must be registered before proceeding';
     }
     return null;
@@ -184,12 +189,60 @@ export default function MerchantSetupPage() {
       const paymentUrl = `${baseUrl}/pay?config=${encodedConfig}`;
       
       setGeneratedUrl(paymentUrl);
+      
+      // Generate QR code preview
+      try {
+        const qrDataUrl = await QRCode.toDataURL(paymentUrl, {
+          width: 256,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        });
+        setQrCodeDataUrl(qrDataUrl);
+      } catch (qrErr) {
+        console.error('Failed to generate QR code preview:', qrErr);
+      }
+      
       setSuccess('Payment URL generated successfully!');
+      
+      // Store payment URL on-chain if subname is registered (not in testing mode)
+      if (config.businessName && isTestingMode && isSubnameRegistered) {
+        await storePaymentUrlOnChain(paymentUrl);
+      }
       
     } catch (err: any) {
       setError(`Failed to generate URL: ${err.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const storePaymentUrlOnChain = async (paymentUrl: string) => {
+    if (!config.businessName) {
+      console.error('No business name configured');
+      return;
+    }
+
+    setIsUpdatingSubname(true);
+    setSuccess('Storing payment URL on-chain...');
+
+    try {
+      await updateSubname({
+        ens: config.businessName,
+        text: [
+          { key: 'url', value: paymentUrl },
+        ],
+      });
+      
+      setSuccess('Payment URL stored on-chain successfully!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to store URL on-chain:', err);
+      setError(`Failed to store URL on-chain: ${err.message}`);
+    } finally {
+      setIsUpdatingSubname(false);
     }
   };
 
@@ -203,9 +256,38 @@ export default function MerchantSetupPage() {
     }
   };
 
-  const downloadQRCode = () => {
-    // This would generate a QR code - for now, we'll just show a placeholder
-    setSuccess('QR Code generation would be implemented here');
+  const downloadQRCode = async () => {
+    if (!generatedUrl) {
+      setError('Please generate a payment URL first');
+      return;
+    }
+
+    try {
+      setSuccess('Generating QR code...');
+      
+      // Generate QR code as data URL
+      const qrDataUrl = await QRCode.toDataURL(generatedUrl, {
+        width: 512,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      });
+
+      // Create a temporary link to download the QR code
+      const link = document.createElement('a');
+      link.href = qrDataUrl;
+      link.download = `payment-qr-${config.businessName.split('.')[0]}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setSuccess('QR code downloaded successfully!');
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (err: any) {
+      setError(`Failed to generate QR code: ${err.message}`);
+    }
   };
 
   const resetConfig = () => {
@@ -222,6 +304,8 @@ export default function MerchantSetupPage() {
     setIsSubnameRegistered(false);
     setError(null);
     setSuccess(null);
+    setQrCodeDataUrl(null);
+    setIsTestingMode(false);
   };
 
   const handleSubnameRegistration = async () => {
@@ -356,6 +440,17 @@ export default function MerchantSetupPage() {
         </div>
 
         {/* Status Messages */}
+        {isTestingMode && (
+          <div className="mb-8 p-4 bg-yellow-900/20 border-2 border-yellow-500/50 text-yellow-300 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              🧪 Testing Mode Active - Subname registration skipped
+            </div>
+          </div>
+        )}
+        
         {error && (
           <div className="mb-8 p-4 bg-red-900/20 border border-red-500/30 text-red-300 rounded-xl backdrop-blur-sm">
             <div className="flex items-center">
@@ -456,17 +551,41 @@ export default function MerchantSetupPage() {
                 </div>
 
                 {/* Register Button */}
-                <button
-                  onClick={handleSubnameRegistration}
-                  disabled={!merchantSubname || !isConnected || !isSubnameAvailable?.isAvailable || isSubnameRegistered}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
-                >
-                  {!isConnected ? 'Connect Wallet to Register' : 
-                   !merchantSubname ? 'Enter a subname' :
-                   !isSubnameAvailable?.isAvailable ? 'Subname not available' :
-                   isSubnameRegistered ? 'Subname Registered ✓' :
-                   'Register Subname'}
-                </button>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleSubnameRegistration}
+                    disabled={!merchantSubname || !isConnected || !isSubnameAvailable?.isAvailable || isSubnameRegistered}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                  >
+                    {!isConnected ? 'Connect Wallet to Register' : 
+                     !merchantSubname ? 'Enter a subname' :
+                     !isSubnameAvailable?.isAvailable ? 'Subname not available' :
+                     isSubnameRegistered ? 'Subname Registered ✓' :
+                     'Register Subname'}
+                  </button>
+                  
+                  {/* Testing Mode Skip Button */}
+                  <button
+                    onClick={() => {
+                      setIsTestingMode(true);
+                      setIsSubnameRegistered(true);
+                      if (!config.businessName.trim() && merchantSubname) {
+                        setConfig(prev => ({
+                          ...prev,
+                          businessName: `${merchantSubname}.resolverlens.eth`
+                        }));
+                      }
+                      setSuccess('Testing mode enabled - Skipping subname registration');
+                      setTimeout(() => {
+                        setCurrentStep(2);
+                        setSuccess(null);
+                      }, 1500);
+                    }}
+                    className="w-full px-6 py-3 bg-yellow-600/20 border-2 border-yellow-500/50 text-yellow-400 rounded-xl font-medium hover:bg-yellow-600/30 transition-all"
+                  >
+                    🧪 Skip Registration (Testing Mode)
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -576,7 +695,7 @@ export default function MerchantSetupPage() {
                       await generatePaymentUrl();
                       setCurrentStep(3);
                     }}
-                    disabled={!config.address || !config.chainId || !isSubnameRegistered}
+                    disabled={!config.address || !config.chainId || (!isSubnameRegistered && !isTestingMode)}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
                   >
                     Generate Payment Link
@@ -596,6 +715,19 @@ export default function MerchantSetupPage() {
               </h2>
 
               <div className="space-y-6">
+                {/* QR Code Display */}
+                {qrCodeDataUrl && (
+                  <div className="flex flex-col items-center bg-black/30 rounded-xl p-6 border border-foreground/10">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Scan to Pay</h3>
+                    <div className="bg-white p-4 rounded-lg shadow-lg">
+                      <img src={qrCodeDataUrl} alt="Payment QR Code" className="w-64 h-64" />
+                    </div>
+                    <p className="text-sm text-foreground/60 mt-4 text-center">
+                      Customers can scan this QR code to make payments
+                    </p>
+                  </div>
+                )}
+
                 <div className="bg-black/30 rounded-xl p-4 border border-foreground/10">
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-sm font-medium text-foreground/80">Generated Payment URL:</span>
@@ -636,6 +768,31 @@ export default function MerchantSetupPage() {
                   </button>
                 </div>
 
+                {/* Store on-chain button (only show if subname is registered and not in testing mode) */}
+                {!isTestingMode && isSubnameRegistered && config.businessName && (
+                  <div className="bg-gradient-to-r from-orange-900/20 to-pink-900/20 border-2 border-orange-500/30 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-orange-300 font-medium">Store on-chain (ENS)</h3>
+                      {isUpdatingSubname && (
+                        <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                    </div>
+                    <p className="text-sm text-orange-200/80 mb-3">
+                      Store your payment URL permanently on the blockchain as an ENS text record
+                    </p>
+                    <button
+                      onClick={() => storePaymentUrlOnChain(generatedUrl)}
+                      disabled={isUpdatingSubname || isUpdateSubnamePending || !generatedUrl}
+                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-pink-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-orange-700 hover:to-pink-700 transition-all flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                      </svg>
+                      {isUpdatingSubname || isUpdateSubnamePending ? 'Storing...' : 'Store URL on-chain'}
+                    </button>
+                  </div>
+                )}
+
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
                   <h3 className="text-blue-300 font-medium mb-2">Configuration Summary:</h3>
                   <div className="space-y-1 text-sm text-foreground/80">
@@ -661,6 +818,8 @@ export default function MerchantSetupPage() {
                       setGeneratedUrl('');
                       setMerchantSubname('');
                       setIsSubnameRegistered(false);
+                      setQrCodeDataUrl(null);
+                      setIsTestingMode(false);
                       setConfig({
                         chainId: 1,
                         token: 'ETH',
