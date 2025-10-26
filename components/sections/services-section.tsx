@@ -1,6 +1,7 @@
 "use client"
 
 import { useReveal } from "@/hooks/use-reveal"
+import Image from "next/image"
 
 export function ServicesSection() {
   const { ref, isVisible } = useReveal(0.3)
@@ -12,7 +13,7 @@ export function ServicesSection() {
     >
       <div className="mx-auto w-full max-w-7xl">
         <div
-          className={`mb-12 transition-all duration-700 md:mb-16 ${
+          className={`mb-2 transition-all duration-700 md:mb-2 ${
             isVisible ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
           }`}
         >
@@ -22,7 +23,26 @@ export function ServicesSection() {
           <p className="font-mono text-sm text-foreground/60 md:text-base">/ Architecture overview</p>
         </div>
 
-        {/* Architecture diagram will be added here */}
+        {/* Architecture Diagram */}
+        <div
+          className={`transition-all duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
+          }`}
+          style={{ transitionDelay: "200ms" }}
+        >
+          <div className="bg-foreground/5 backdrop-blur-sm border border-foreground/10 rounded-2xl p-4 md:p-6 lg:p-8 overflow-hidden">
+            <div className="relative w-full max-w-5xl mx-auto" style={{ aspectRatio: '16/9' }}>
+              <Image
+                src="/Architecture.png"
+                alt="NexxPay Architecture - Payment flow diagram showing unified balance, Nexus supported chains, and bridge & execute for non-supported chains"
+                fill
+                className="object-contain rounded-xl"
+                priority
+                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 65vw"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   )

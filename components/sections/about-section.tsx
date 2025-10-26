@@ -25,7 +25,7 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
                 <br />
                 future of
                 <br />
-                <span className="text-foreground/40">digital</span>
+                <span className="text-foreground/40">payments</span>
               </h2>
             </div>
 
@@ -36,11 +36,10 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
               style={{ transitionDelay: "200ms" }}
             >
               <p className="max-w-md text-sm leading-relaxed text-foreground/90 md:text-lg">
-                We're a collective of designers, developers, and creative technologists obsessed with crafting
-                exceptional digital experiences.
+                Unified liquidity across all chains. Pay using any token from any chain with a single interface.
               </p>
               <p className="max-w-md text-sm leading-relaxed text-foreground/90 md:text-lg">
-                Every project is an opportunity to explore new possibilities and push creative boundaries.
+                No setup required — payment intent is embedded directly in ENS records. Just scan, tap, or share.
               </p>
             </div>
           </div>
@@ -48,9 +47,9 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
           {/* Right side - Stats with creative layout */}
           <div className="flex flex-col justify-center space-y-6 md:space-y-12">
             {[
-              { value: "150+", label: "Projects", sublabel: "Delivered worldwide", direction: "right" },
-              { value: "8", label: "Years", sublabel: "Of innovation", direction: "left" },
-              { value: "12", label: "Awards", sublabel: "Industry recognition", direction: "right" },
+              { value: "15+", label: "Chains", sublabel: "Supported networks", direction: "right" },
+              { value: "11", label: "Tokens", sublabel: "Unified liquidity", direction: "left" },
+              { value: "1", label: "Interface", sublabel: "All chains unified", direction: "right" },
             ].map((stat, i) => {
               const getRevealClass = () => {
                 if (!isVisible) {
@@ -87,10 +86,10 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
           style={{ transitionDelay: "750ms" }}
         >
           <MagneticButton size="lg" variant="primary" onClick={() => scrollToSection?.(4)}>
-            Start a Project
+            Get Started
           </MagneticButton>
           <MagneticButton size="lg" variant="secondary" onClick={() => scrollToSection?.(1)}>
-            View Our Work
+            How It Works
           </MagneticButton>
         </div>
       </div>

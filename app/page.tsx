@@ -245,9 +245,14 @@ export default function Home() {
           ))}
         </div>
 
-        <MagneticButton variant="secondary" onClick={() => scrollToSection(4)}>
-          Get Started
-        </MagneticButton>
+        <div className="hidden items-center gap-4 md:flex">
+          <MagneticButton variant="secondary" onClick={() => window.location.href = "/ens"}>
+            ENS Pay
+          </MagneticButton>
+          <MagneticButton variant="secondary" onClick={() => window.location.href = "/create"}>
+            Get Started
+          </MagneticButton>
+        </div>
       </nav>
 
       <div
@@ -280,12 +285,16 @@ export default function Home() {
               <MagneticButton
                 size="lg"
                 variant="primary"
-                onClick={() => window.open("https://v0.app/templates/R3n0gnvYFbO", "_blank")}
+                onClick={() => window.location.href = "/create"}
               >
-                Launch App
+                Get Started
               </MagneticButton>
-              <MagneticButton size="lg" variant="secondary" onClick={() => scrollToSection(2)}>
-                Learn More
+              <MagneticButton 
+                size="lg" 
+                variant="secondary"
+                onClick={() => window.location.href = "/ens"}
+              >
+                ENS Pay
               </MagneticButton>
             </div>
           </div>
